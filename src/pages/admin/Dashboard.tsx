@@ -179,9 +179,6 @@ export default function Dashboard() {
       {/* Page header */}
       <div>
         <h1 className="text-2xl font-semibold text-gray-900">대시보드 - 전체지역</h1>
-        <p className="mt-2 text-sm text-gray-700">
-          김천시 및 전북특별자치도 농기계 임대 현황을 한눈에 확인하세요
-        </p>
       </div>
 
       {/* Stats cards */}

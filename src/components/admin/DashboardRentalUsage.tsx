@@ -30,22 +30,72 @@ interface RentalData {
   regions: RegionData[];
 }
 
+// 7개 계열 카테고리
+const CATEGORIES = [
+  '트랙터 계열',
+  '수확기 계열', 
+  '파쇄기 계열',
+  '탈곡기 계열',
+  '이양기 계열',
+  '살포기 계열',
+  '기타 계열'
+];
+
 // 카테고리별 색상 매핑
 const CATEGORY_COLORS = {
-  '트랙터류': '#328E6E',
-  '수확기류': '#F97316', 
-  '경운정지류': '#4F9CF9',
-  '파종이앙류': '#8B5CF6',
-  '방제살포류': '#EF4444',
-  '기타': '#6B7280'
+  '트랙터 계열': '#328E6E',
+  '수확기 계열': '#F97316', 
+  '파쇄기 계열': '#4F9CF9',
+  '탈곡기 계열': '#8B5CF6',
+  '이양기 계열': '#EF4444',
+  '살포기 계열': '#10B981',
+  '기타 계열': '#6B7280'
 };
 
-const CATEGORIES = ['트랙터류', '수확기류', '경운정지류', '파종이앙류', '방제살포류', '기타'];
+// 헬퍼 함수들
+
+/** 월 1..12 강제 채움 + 카테고리 누락 0 채움 */
+function fillMonths(rows: {월:number, 장비:{카테고리:string, 총대여일수:number}[]}[], cats: string[]) {
+  const byMonth: Record<number, any> = {};
+  for (let m=1;m<=12;m++){
+    byMonth[m] = { 월: m };
+    cats.forEach(c => { byMonth[m][c] = 0; });
+  }
+  for (const r of rows) {
+    const m = r.월;
+    if (!byMonth[m]) continue;
+    for (const it of r.장비 || []) {
+      if (cats.includes(it.카테고리)) byMonth[m][it.카테고리] += it.총대여일수 || 0;
+    }
+  }
+  return Array.from({length:12}, (_,i)=>byMonth[i+1]);
+}
+
+/** 지역+연도 → 월별 카테고리 합산 테이블 */
+function getMonthly(json:any, region:string, year:number){
+  if (!json) return [];
+  const cats = ["트랙터 계열","수확기 계열","파쇄기 계열","탈곡기 계열","이양기 계열","살포기 계열","기타 계열"];
+  const r = (json?.regions || []).find((x:any)=>x.지역===region);
+  const rows = (r?.월별 || []).filter((x:any)=>x.연도===year);
+  return fillMonths(rows, cats);
+}
+
+/** 연간 합계 파이 시리즈 */
+function getPieSeries(monthly:any[]){
+  if (!Array.isArray(monthly)) return [];
+  const cats = Object.keys(monthly[0]||{}).filter(k=>k!=="월");
+  const sums: Record<string, number> = {};
+  cats.forEach(c=>sums[c]=0);
+  monthly.forEach(row=>{
+    cats.forEach(c=> sums[c] += row[c]||0 );
+  });
+  return cats.map(c=>({ 카테고리:c, value:sums[c] })).filter(item => item.value > 0);
+}
 
 export default function DashboardRentalUsage() {
-  const [selectedRegion, setSelectedRegion] = useState('김천시'); // 기본값을 김천시로 변경
-  const [selectedYear, setSelectedYear] = useState(2021);
-  const [selectedCategory, setSelectedCategory] = useState('트랙터류');
+  const [region, setRegion] = useState<'정읍'|'장수'|'완주'|'전주'>('정읍');
+  const [year, setYear] = useState<number>(2021);
+  const [selectedCategory, setSelectedCategory] = useState('트랙터 계열');
   const [loading, setLoading] = useState(true);
   const dataRef = useRef<RentalData | null>(null);
 
@@ -56,163 +106,7 @@ export default function DashboardRentalUsage() {
         const response = await fetch('/data/all_regions_monthly_rental_days_remapped_fix.json');
         const data = await response.json();
         
-        // 김천시 데이터 추가 (임시 데이터)
-        const kimcheonData = {
-          "지역": "김천시",
-          "월별": [
-            {
-              "연도": 2021,
-              "월": 1,
-              "장비": [
-                { "카테고리": "트랙터류", "총대여일수": 45 },
-                { "카테고리": "수확기류", "총대여일수": 12 },
-                { "카테고리": "경운정지류", "총대여일수": 38 },
-                { "카테고리": "파종이앙류", "총대여일수": 15 },
-                { "카테고리": "방제살포류", "총대여일수": 22 },
-                { "카테고리": "기타", "총대여일수": 18 }
-              ]
-            },
-            {
-              "연도": 2021,
-              "월": 2,
-              "장비": [
-                { "카테고리": "트랙터류", "총대여일수": 52 },
-                { "카테고리": "수확기류", "총대여일수": 8 },
-                { "카테고리": "경운정지류", "총대여일수": 42 },
-                { "카테고리": "파종이앙류", "총대여일수": 18 },
-                { "카테고리": "방제살포류", "총대여일수": 25 },
-                { "카테고리": "기타", "총대여일수": 20 }
-              ]
-            },
-            {
-              "연도": 2021,
-              "월": 3,
-              "장비": [
-                { "카테고리": "트랙터류", "총대여일수": 68 },
-                { "카테고리": "수확기류", "총대여일수": 5 },
-                { "카테고리": "경운정지류", "총대여일수": 55 },
-                { "카테고리": "파종이앙류", "총대여일수": 32 },
-                { "카테고리": "방제살포류", "총대여일수": 28 },
-                { "카테고리": "기타", "총대여일수": 23 }
-              ]
-            },
-            {
-              "연도": 2021,
-              "월": 4,
-              "장비": [
-                { "카테고리": "트랙터류", "총대여일수": 78 },
-                { "카테고리": "수확기류", "총대여일수": 3 },
-                { "카테고리": "경운정지류", "총대여일수": 65 },
-                { "카테고리": "파종이앙류", "총대여일수": 48 },
-                { "카테고리": "방제살포류", "총대여일수": 35 },
-                { "카테고리": "기타", "총대여일수": 28 }
-              ]
-            },
-            {
-              "연도": 2021,
-              "월": 5,
-              "장비": [
-                { "카테고리": "트랙터류", "총대여일수": 85 },
-                { "카테고리": "수확기류", "총대여일수": 8 },
-                { "카테고리": "경운정지류", "총대여일수": 72 },
-                { "카테고리": "파종이앙류", "총대여일수": 62 },
-                { "카테고리": "방제살포류", "총대여일수": 45 },
-                { "카테고리": "기타", "총대여일수": 35 }
-              ]
-            },
-            {
-              "연도": 2021,
-              "월": 6,
-              "장비": [
-                { "카테고리": "트랙터류", "총대여일수": 72 },
-                { "카테고리": "수확기류", "총대여일수": 15 },
-                { "카테고리": "경운정지류", "총대여일수": 58 },
-                { "카테고리": "파종이앙류", "총대여일수": 38 },
-                { "카테고리": "방제살포류", "총대여일수": 52 },
-                { "카테고리": "기타", "총대여일수": 32 }
-              ]
-            },
-            {
-              "연도": 2021,
-              "월": 7,
-              "장비": [
-                { "카테고리": "트랙터류", "총대여일수": 65 },
-                { "카테고리": "수확기류", "총대여일수": 22 },
-                { "카테고리": "경운정지류", "총대여일수": 45 },
-                { "카테고리": "파종이앙류", "총대여일수": 25 },
-                { "카테고리": "방제살포류", "총대여일수": 68 },
-                { "카테고리": "기타", "총대여일수": 28 }
-              ]
-            },
-            {
-              "연도": 2021,
-              "월": 8,
-              "장비": [
-                { "카테고리": "트랙터류", "총대여일수": 58 },
-                { "카테고리": "수확기류", "총대여일수": 35 },
-                { "카테고리": "경운정지류", "총대여일수": 38 },
-                { "카테고리": "파종이앙류", "총대여일수": 18 },
-                { "카테고리": "방제살포류", "총대여일수": 55 },
-                { "카테고리": "기타", "총대여일수": 25 }
-              ]
-            },
-            {
-              "연도": 2021,
-              "월": 9,
-              "장비": [
-                { "카테고리": "트랙터류", "총대여일수": 62 },
-                { "카테고리": "수확기류", "총대여일수": 78 },
-                { "카테고리": "경운정지류", "총대여일수": 42 },
-                { "카테고리": "파종이앙류", "총대여일수": 22 },
-                { "카테고리": "방제살포류", "총대여일수": 48 },
-                { "카테고리": "기타", "총대여일수": 32 }
-              ]
-            },
-            {
-              "연도": 2021,
-              "월": 10,
-              "장비": [
-                { "카테고리": "트랙터류", "총대여일수": 75 },
-                { "카테고리": "수확기류", "총대여일수": 95 },
-                { "카테고리": "경운정지류", "총대여일수": 52 },
-                { "카테고리": "파종이앙류", "총대여일수": 28 },
-                { "카테고리": "방제살포류", "총대여일수": 35 },
-                { "카테고리": "기타", "총대여일수": 38 }
-              ]
-            },
-            {
-              "연도": 2021,
-              "월": 11,
-              "장비": [
-                { "카테고리": "트랙터류", "총대여일수": 48 },
-                { "카테고리": "수확기류", "총대여일수": 42 },
-                { "카테고리": "경운정지류", "총대여일수": 35 },
-                { "카테고리": "파종이앙류", "총대여일수": 15 },
-                { "카테고리": "방제살포류", "총대여일수": 22 },
-                { "카테고리": "기타", "총대여일수": 28 }
-              ]
-            },
-            {
-              "연도": 2021,
-              "월": 12,
-              "장비": [
-                { "카테고리": "트랙터류", "총대여일수": 35 },
-                { "카테고리": "수확기류", "총대여일수": 18 },
-                { "카테고리": "경운정지류", "총대여일수": 25 },
-                { "카테고리": "파종이앙류", "총대여일수": 8 },
-                { "카테고리": "방제살포류", "총대여일수": 15 },
-                { "카테고리": "기타", "총대여일수": 22 }
-              ]
-            }
-          ]
-        };
-        
-        // 기존 데이터에 김천시 데이터 추가
-        const extendedData = {
-          regions: [...data.regions, kimcheonData]
-        };
-        
-        dataRef.current = extendedData;
+        dataRef.current = data;
         setLoading(false);
       } catch (error) {
         console.error('데이터 로드 실패:', error);
@@ -222,66 +116,34 @@ export default function DashboardRentalUsage() {
     loadData();
   }, []);
 
-  // 헬퍼 함수들
-  const getRegionYears = (data: RentalData, region: string): number[] => {
+  const data = dataRef.current;
+
+  // 사용 가능한 지역 및 연도
+  const availableRegions = useMemo(() => {
+    return data ? data.regions.map(r => r.지역) : [];
+  }, [data]);
+
+  const availableYears = useMemo(() => {
+    if (!data) return [];
     const regionData = data.regions.find(r => r.지역 === region);
     if (!regionData) return [];
-    
     const years = [...new Set(regionData.월별.map(m => m.연도))];
-    return years.sort((a, b) => a - b);
-  };
+    return years.sort((a, b) => b - a); // 최신년도 먼저
+  }, [data, region]);
 
-
-  const getLineSeries = (data: RentalData, region: string, year: number, category: string) => {
-    const regionData = data.regions.find(r => r.지역 === region);
-    if (!regionData) return [];
-
-    const yearData = regionData.월별.filter(m => m.연도 === year);
-    const result = [];
-
-    for (let month = 1; month <= 12; month++) {
-      const monthData = yearData.find(m => m.월 === month);
-      const equipment = monthData?.장비?.find(e => e.카테고리 === category);
-      
-      result.push({
-        월: month,
-        value: equipment?.총대여일수 || 0
-      });
-    }
-
-    return result;
-  };
-
-
-  // 메모화된 데이터
-  const { availableRegions, availableYears, lineData } = useMemo(() => {
-    if (!dataRef.current) {
-      return {
-        availableRegions: [],
-        availableYears: [],
-        lineData: []
-      };
-    }
-
-    const regions = dataRef.current.regions.map(r => r.지역);
-    const years = getRegionYears(dataRef.current, selectedRegion);
-    const line = getLineSeries(dataRef.current, selectedRegion, selectedYear, selectedCategory);
-
-    return {
-      availableRegions: regions,
-      availableYears: years,
-      lineData: line
-    };
-  }, [selectedRegion, selectedYear, selectedCategory, loading]);
+  // 파생 데이터 메모이제이션
+  const monthlyData = useMemo(() => getMonthly(data, region, year), [data, region, year]);
+  const lineSeries = useMemo(() => monthlyData.map(d => ({ 월: d.월, value: d[selectedCategory] || 0 })), [monthlyData, selectedCategory]);
 
   // 연도가 변경되면 유효한 연도로 조정
   useEffect(() => {
-    if (availableYears.length > 0 && !availableYears.includes(selectedYear)) {
-      setSelectedYear(availableYears[0]);
+    if (availableYears.length > 0 && !availableYears.includes(year)) {
+      setYear(availableYears[0]);
     }
-  }, [availableYears, selectedYear]);
+  }, [availableYears, year]);
 
-  if (loading) {
+  // 데이터 로드 가드 - 모든 hooks 호출 후에 위치
+  if (!data) {
     return (
       <div className="bg-white shadow rounded-lg p-8">
         <div className="flex items-center justify-center h-96">
@@ -301,17 +163,17 @@ export default function DashboardRentalUsage() {
               지역 선택
             </label>
             <select
-              value={selectedRegion}
-              onChange={(e) => setSelectedRegion(e.target.value)}
+              value={region}
+              onChange={(e) => setRegion(e.target.value as '정읍'|'장수'|'완주'|'전주')}
               className="w-full px-3 py-2 border-2 rounded-md focus:outline-none focus:ring-2 text-gray-800 dark:text-gray-100"
               style={{
                 borderColor: '#328E6E',
                 '--tw-ring-color': '#328E6E'
               } as React.CSSProperties}
             >
-              {availableRegions.map(region => (
-                <option key={region} value={region} className="text-gray-800 bg-white">
-                  {region}
+              {availableRegions.map(regionName => (
+                <option key={regionName} value={regionName} className="text-gray-800 bg-white">
+                  {regionName}
                 </option>
               ))}
             </select>
@@ -322,17 +184,17 @@ export default function DashboardRentalUsage() {
               연도 선택
             </label>
             <select
-              value={selectedYear}
-              onChange={(e) => setSelectedYear(parseInt(e.target.value))}
+              value={year}
+              onChange={(e) => setYear(parseInt(e.target.value))}
               className="w-full px-3 py-2 border-2 rounded-md focus:outline-none focus:ring-2 text-gray-800 dark:text-gray-100"
               style={{
                 borderColor: '#328E6E',
                 '--tw-ring-color': '#328E6E'
               } as React.CSSProperties}
             >
-              {availableYears.map(year => (
-                <option key={year} value={year} className="text-gray-800 bg-white">
-                  {year}년
+              {availableYears.map(yearOption => (
+                <option key={yearOption} value={yearOption} className="text-gray-800 bg-white">
+                  {yearOption}년
                 </option>
               ))}
             </select>
@@ -361,14 +223,14 @@ export default function DashboardRentalUsage() {
         </div>
       </div>
 
-      {/* 농기계별 월별 추이 차트 - 가로로 길게 */}
+      {/* 농기계 계열 월별 추이 차트 - 전체 폭 */}
       <div className="bg-white shadow rounded-lg p-8">
-        <h3 className="text-xl font-bold text-gray-900 mb-6">
-          {selectedCategory} 월별 대여 추이 ({selectedRegion} {selectedYear}년)
+        <h3 className="text-xl font-bold text-gray-800 dark:text-gray-100 mb-6">
+          {selectedCategory} 월별 추이 ({region} {year}년)
         </h3>
-        <div className="h-[400px]">
+        <div className="h-[280px]">
           <ResponsiveContainer width="100%" height="100%">
-            <LineChart data={lineData} margin={{ top: 30, right: 50, left: 30, bottom: 30 }}>
+            <LineChart data={lineSeries} margin={{ top: 30, right: 50, left: 30, bottom: 30 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="#f3f4f6" />
               <XAxis 
                 dataKey="월"
@@ -381,8 +243,8 @@ export default function DashboardRentalUsage() {
                 label={{ value: '대여일수 (일)', angle: -90, position: 'insideLeft', style: { textAnchor: 'middle' } }}
               />
               <Tooltip 
-                formatter={(value: any) => [`${value}일`, selectedCategory]}
-                labelFormatter={(label: any) => `${selectedYear}년 ${label}월`}
+                formatter={(value: number) => [`${value}일`, selectedCategory]}
+                labelFormatter={(label: number) => `${year}년 ${label}월`}
                 contentStyle={{
                   backgroundColor: '#fff',
                   border: '1px solid #e5e7eb',
@@ -393,17 +255,17 @@ export default function DashboardRentalUsage() {
               <Line 
                 type="monotone" 
                 dataKey="value" 
-                stroke={CATEGORY_COLORS[selectedCategory as keyof typeof CATEGORY_COLORS]}
+                stroke={CATEGORY_COLORS[selectedCategory as keyof typeof CATEGORY_COLORS] || '#328E6E'}
                 strokeWidth={4}
                 dot={{ 
-                  fill: CATEGORY_COLORS[selectedCategory as keyof typeof CATEGORY_COLORS], 
+                  fill: CATEGORY_COLORS[selectedCategory as keyof typeof CATEGORY_COLORS] || '#328E6E', 
                   r: 6,
                   strokeWidth: 2,
                   stroke: '#fff'
                 }}
                 activeDot={{ 
                   r: 8,
-                  fill: CATEGORY_COLORS[selectedCategory as keyof typeof CATEGORY_COLORS],
+                  fill: CATEGORY_COLORS[selectedCategory as keyof typeof CATEGORY_COLORS] || '#328E6E',
                   strokeWidth: 3,
                   stroke: '#fff'
                 }}
