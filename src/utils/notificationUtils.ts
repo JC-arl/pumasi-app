@@ -1,6 +1,6 @@
 export interface NotificationItem {
   id: string;
-  type: 'RESERVATION_CONFIRMED' | 'RESERVATION_CANCELLED' | 'SYSTEM_INFO' | 'PROMOTION';
+  type: 'RESERVATION_CONFIRMED' | 'RESERVATION_CANCELLED' | 'RESERVATION_APPROVED' | 'RESERVATION_REJECTED' | 'RESERVATION_CHECKOUT' | 'RESERVATION_RETURNED' | 'SYSTEM_INFO' | 'PROMOTION';
   title: string;
   message: string;
   read: boolean;
@@ -89,7 +89,50 @@ export const createReservationNotification = (type: 'confirmed' | 'cancelled', m
     return addNotification({
       type: 'RESERVATION_CANCELLED',
       title: '예약이 취소되었습니다',
-      message: `${machineryName} 예약이 취소되었습니다. 재고가 복구되었습니다.`,
+      message: `${machineryName} 예약이 취소되었습니다.`,
+      read: false,
+      actionUrl: '/my/reservations',
+      data: { reservationId }
+    });
+  }
+};
+
+// 예약 상태 변경 알림 생성
+export const createStatusChangeNotification = (status: string, machineryName: string, reservationId: string, reason?: string) => {
+  const notifications = {
+    'APPROVED': {
+      type: 'RESERVATION_APPROVED' as const,
+      title: '예약이 승인되었습니다',
+      message: `${machineryName} 예약이 승인되었습니다. 곧 출고 준비가 시작됩니다.`
+    },
+    'REJECTED': {
+      type: 'RESERVATION_REJECTED' as const,
+      title: '예약이 반려되었습니다',
+      message: `${machineryName} 예약이 반려되었습니다.${reason ? ` 사유: ${reason}` : ''}`
+    },
+    'CHECKED_OUT': {
+      type: 'RESERVATION_CHECKOUT' as const,
+      title: '농기계가 출고되었습니다',
+      message: `${machineryName}가 출고되었습니다. 안전하게 이용해주세요.`
+    },
+    'RETURNED': {
+      type: 'RESERVATION_RETURNED' as const,
+      title: '농기계 반납이 완료되었습니다',
+      message: `${machineryName} 반납이 완료되었습니다. 이용해주셔서 감사합니다.`
+    },
+    'CANCELLED': {
+      type: 'RESERVATION_CANCELLED' as const,
+      title: '예약이 취소되었습니다',
+      message: `${machineryName} 예약이 취소되었습니다.${reason ? ` 사유: ${reason}` : ''}`
+    }
+  };
+
+  const notificationData = notifications[status as keyof typeof notifications];
+  if (notificationData) {
+    return addNotification({
+      type: notificationData.type,
+      title: notificationData.title,
+      message: notificationData.message,
       read: false,
       actionUrl: '/my/reservations',
       data: { reservationId }

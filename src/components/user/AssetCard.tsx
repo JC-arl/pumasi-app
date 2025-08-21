@@ -1,6 +1,8 @@
 import { Link } from 'react-router-dom';
-import { Clock, MapPin, Star, Truck } from 'lucide-react';
+import { Clock, MapPin, Star, Truck, ShoppingCart, Check } from 'lucide-react';
 import type { AssetDetail } from '../../types/user';
+import { useCart } from '../../contexts/CartContext';
+import { colors } from '../../styles/colors';
 
 interface AssetCardProps {
   asset: Partial<AssetDetail> & {
@@ -42,7 +44,7 @@ export default function AssetCard({
           </div>
           {asset.office.deliveryAvailable && (
             <div className="ml-4 flex-shrink-0">
-              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium" style={{backgroundColor: colors.primary.accent, color: colors.primary.main}}>
                 <Truck className="h-3 w-3 mr-1" />
                 배송가능
               </span>
@@ -55,7 +57,7 @@ export default function AssetCard({
           <MapPin className="h-4 w-4 mr-1 flex-shrink-0" />
           <span className="truncate">{asset.office.name}</span>
           {showDistance && distance && (
-            <span className="ml-2 text-brand-navy font-medium">
+            <span className="ml-2 font-medium" style={{color: colors.primary.main}}>
               {distance.toFixed(1)}km
             </span>
           )}
@@ -82,8 +84,8 @@ export default function AssetCard({
         {/* Availability indicator */}
         <div className="mt-4 flex items-center justify-between">
           <div className="flex items-center text-sm">
-            <div className="w-2 h-2 bg-brand-blue rounded-full mr-2"></div>
-            <span className="text-brand-navy font-medium">예약 가능</span>
+            <div className="w-2 h-2 rounded-full mr-2" style={{backgroundColor: colors.primary.main}}></div>
+            <span className="font-medium" style={{color: colors.primary.main}}>예약 가능</span>
           </div>
           <div className="flex items-center text-xs text-gray-400">
             <Clock className="h-3 w-3 mr-1" />

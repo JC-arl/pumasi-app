@@ -18,6 +18,7 @@ import { kimcheonMachinery } from '../../data/kimcheonMachinery';
 import { mockRentalOffices } from '../../data/mockData';
 import type { Machinery } from '../../types/rental';
 import AccessibilityModal from '../../components/user/AccessibilityModal';
+import { colors } from '../../styles/colors';
 
 // 임시 데이터
 const mockWeather = {
@@ -121,7 +122,7 @@ export default function HomePage() {
   return (
     <div className="min-h-screen pb-20 lg:pb-8" style={{backgroundColor: '#F3F3E0'}}>
       {/* Hero Section */}
-      <div className="bg-gradient-to-r" style={{background: 'linear-gradient(to right, #133E87, #608BC1)'}}>
+      <div className="bg-gradient-to-r" style={{background: `linear-gradient(to right, ${colors.primary.main}, ${colors.primary.light})`}}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
           <div className="text-center">
             <h1 className="text-3xl font-bold text-white sm:text-4xl">
@@ -137,24 +138,24 @@ export default function HomePage() {
               </p>
             </div>
             <form onSubmit={handleSearch} className="relative">
-              <div className="bg-white rounded-xl shadow-lg border-4 border-white transition-all duration-300" style={{'--hover-border': '#CBDCEB'}}>
+              <div className="bg-white rounded-xl shadow-lg border-4 border-white transition-all duration-300">
                 <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                  <Search className="h-6 w-6" style={{color: '#133E87'}} />
+                  <Search className="h-6 w-6" style={{color: colors.primary.main}} />
                 </div>
                 <input
                   type="text"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="block w-full pl-14 pr-28 py-5 border-0 rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none text-lg font-medium"
-                  style={{'--focus-ring': '#CBDCEB'}}
+                  style={{}}
                   placeholder="장비명, 작업 종류, 지역을 검색하세요..."
                 />
                 <button
                   type="submit"
                   className="absolute right-2 top-2 bottom-2 px-8 text-white rounded-lg font-semibold text-base shadow-md hover:shadow-lg transform hover:scale-105 transition-all duration-200"
-                  style={{backgroundColor: '#133E87'}}
-                  onMouseEnter={(e) => e.target.style.backgroundColor = '#608BC1'}
-                  onMouseLeave={(e) => e.target.style.backgroundColor = '#133E87'}
+                  style={{backgroundColor: colors.button.primary}}
+                  onMouseEnter={(e) => (e.target as HTMLElement).style.backgroundColor = colors.button.primaryHover}
+                  onMouseLeave={(e) => (e.target as HTMLElement).style.backgroundColor = colors.button.primary}
                 >
                   검색
                 </button>
@@ -177,9 +178,9 @@ export default function HomePage() {
             <Link
               to="/map?quick=nearest"
               className="block w-full text-white text-center py-4 rounded-lg transition-colors font-medium"
-              style={{backgroundColor: '#133E87'}}
-              onMouseEnter={(e) => e.target.style.backgroundColor = '#608BC1'}
-              onMouseLeave={(e) => e.target.style.backgroundColor = '#133E87'}
+              style={{backgroundColor: colors.button.primary}}
+              onMouseEnter={(e) => (e.target as HTMLElement).style.backgroundColor = colors.button.primaryHover}
+              onMouseLeave={(e) => (e.target as HTMLElement).style.backgroundColor = colors.button.primary}
             >
               <Zap className="h-5 w-5 inline mr-2" />
               가장 가까운 장비 찾기
@@ -188,9 +189,8 @@ export default function HomePage() {
               <Link
                 to="/map"
                 className="flex items-center text-sm text-gray-600 transition-colors"
-                style={{'--hover-color': '#608BC1'}}
-                onMouseEnter={(e) => e.target.style.color = '#608BC1'}
-                onMouseLeave={(e) => e.target.style.color = '#4B5563'}
+                onMouseEnter={(e) => {(e.target as HTMLElement).style.color = colors.primary.light}}
+                onMouseLeave={(e) => {(e.target as HTMLElement).style.color = '#4B5563'}}
               >
                 <MapPin className="h-4 w-4 mr-2" />
                 지도에서 찾기
@@ -199,8 +199,8 @@ export default function HomePage() {
               <Link
                 to="/my/reservations"
                 className="flex items-center text-sm text-gray-600 transition-colors"
-                onMouseEnter={(e) => e.target.style.color = '#608BC1'}
-                onMouseLeave={(e) => e.target.style.color = '#4B5563'}
+                onMouseEnter={(e) => {(e.currentTarget as HTMLElement).style.color = colors.primary.light}}
+                onMouseLeave={(e) => {(e.currentTarget as HTMLElement).style.color = '#4B5563'}}
               >
                 <Calendar className="h-4 w-4 mr-2" />
                 내 예약 현황
@@ -209,8 +209,8 @@ export default function HomePage() {
               <button
                 onClick={() => setAccessibilityModalOpen(true)}
                 className="flex items-center text-sm text-gray-600 w-full transition-colors"
-                onMouseEnter={(e) => e.target.style.color = '#133E87'}
-                onMouseLeave={(e) => e.target.style.color = '#4B5563'}
+                onMouseEnter={(e) => {(e.target as HTMLElement).style.color = colors.primary.main}}
+                onMouseLeave={(e) => {(e.target as HTMLElement).style.color = '#4B5563'}}
               >
                 <Eye className="h-4 w-4 mr-2" />
                 접근성 설정 (고령자 모드)
@@ -228,9 +228,9 @@ export default function HomePage() {
             <Link
               to="/map"
               className="font-medium flex items-center transition-colors"
-              style={{color: '#133E87'}}
-              onMouseEnter={(e) => e.target.style.color = '#608BC1'}
-              onMouseLeave={(e) => e.target.style.color = '#133E87'}
+              style={{color: colors.primary.main}}
+              onMouseEnter={(e) => {(e.target as HTMLElement).style.color = colors.primary.light}}
+              onMouseLeave={(e) => {(e.target as HTMLElement).style.color = colors.primary.main}}
             >
               전체보기
               <ArrowRight className="h-4 w-4 ml-1" />
@@ -255,7 +255,7 @@ export default function HomePage() {
                   >
                     <div className="flex items-center justify-between mb-2">
                       <h3 className="font-semibold text-gray-900">{machinery.name}</h3>
-                      <TrendingUp className="h-5 w-5" style={{color: '#608BC1'}} />
+                      <TrendingUp className="h-5 w-5" style={{color: colors.primary.light}} />
                     </div>
                     <p className="text-sm text-gray-600 mb-2">{machinery.category}</p>
                     {office && (
@@ -263,7 +263,7 @@ export default function HomePage() {
                     )}
                     {firstSpec && (
                       <div className="flex items-center justify-between">
-                        <span className="text-lg font-bold" style={{color: '#133E87'}}>
+                        <span className="text-lg font-bold" style={{color: colors.primary.main}}>
                           ₩{firstSpec.rentalPrice.toLocaleString()}
                         </span>
                         <span className="text-sm text-gray-500">/일</span>
@@ -306,7 +306,7 @@ export default function HomePage() {
                         ? 'text-white'
                         : 'bg-red-100 text-red-800'
                     }`}
-                    style={reservation.status === 'RESERVED' ? {backgroundColor: '#CBDCEB', color: '#133E87'} : {}}>
+                    style={reservation.status === 'RESERVED' ? {backgroundColor: colors.primary.accent, color: colors.primary.main} : {}}>
                       {reservation.status === 'RESERVED' ? '예약 중' : '취소됨'}
                     </span>
                   </div>
@@ -315,9 +315,9 @@ export default function HomePage() {
               <Link
                 to="/my/reservations"
                 className="block text-center py-2 transition-colors"
-                style={{color: '#133E87'}}
-                onMouseEnter={(e) => e.target.style.color = '#608BC1'}
-                onMouseLeave={(e) => e.target.style.color = '#133E87'}
+                style={{color: colors.primary.main}}
+                onMouseEnter={(e) => {(e.target as HTMLElement).style.color = colors.primary.light}}
+                onMouseLeave={(e) => {(e.target as HTMLElement).style.color = colors.primary.main}}
               >
                 전체 예약 내역 보기
               </Link>
@@ -345,9 +345,9 @@ export default function HomePage() {
               <Link
                 to="/help"
                 className="block text-sm mt-4 transition-colors"
-                style={{color: '#133E87'}}
-                onMouseEnter={(e) => e.target.style.color = '#608BC1'}
-                onMouseLeave={(e) => e.target.style.color = '#133E87'}
+                style={{color: colors.primary.main}}
+                onMouseEnter={(e) => {(e.target as HTMLElement).style.color = colors.primary.light}}
+                onMouseLeave={(e) => {(e.target as HTMLElement).style.color = colors.primary.main}}
               >
                 더 많은 팁 보기 →
               </Link>

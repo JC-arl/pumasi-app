@@ -1,6 +1,9 @@
 import { Routes, Route, Navigate } from "react-router-dom";
 import "./App.css";
 
+// Context Providers
+import { CartProvider } from "./contexts/CartContext";
+
 // User Layout
 import UserLayout from "./components/user/UserLayout";
 
@@ -14,36 +17,45 @@ import NotificationsPage from "./pages/user/NotificationsPage";
 import ProfilePage from "./pages/user/ProfilePage";
 import HelpPage from "./pages/user/HelpPage";
 import RentalOfficeDetailPage from "./pages/user/RentalOfficeDetailPage";
+import CartPage from "./pages/user/CartPage";
 
 // Admin pages
 import AdminLayout from "./components/admin/AdminLayout";
 import Dashboard from "./pages/admin/Dashboard";
 import Assets from "./pages/admin/Assets";
 import Reservations from "./pages/admin/Reservations";
+import Checkout from "./pages/admin/Checkout";
+import Monitoring from "./pages/admin/Monitoring";
+import AllRegionsEquipment from "./pages/admin/AllRegionsEquipment";
 
 function App() {
   return (
-    <Routes>
-      {/* User routes */}
-      <Route path="/" element={<UserLayout />}>
-        <Route index element={<HomePage />} />
-        <Route path="map" element={<MapPage />} />
-        <Route path="office/:officeId" element={<RentalOfficeDetailPage />} />
-        <Route path="machinery/:machineryId" element={<AssetDetailPage />} />
-        <Route path="assets/:id" element={<AssetDetailPage />} />
-        <Route path="reserve" element={<ReservePage />} />
-        <Route path="my/reservations" element={<MyReservationsPage />} />
-        <Route path="my/alerts" element={<NotificationsPage />} />
-        <Route path="profile" element={<ProfilePage />} />
-        <Route path="help" element={<HelpPage />} />
-      </Route>
+    <CartProvider>
+      <Routes>
+        {/* User routes */}
+        <Route path="/" element={<UserLayout />}>
+          <Route index element={<HomePage />} />
+          <Route path="map" element={<MapPage />} />
+          <Route path="cart" element={<CartPage />} />
+          <Route path="office/:officeId" element={<RentalOfficeDetailPage />} />
+          <Route path="machinery/:machineryId" element={<AssetDetailPage />} />
+          <Route path="assets/:id" element={<AssetDetailPage />} />
+          <Route path="reserve" element={<ReservePage />} />
+          <Route path="my/reservations" element={<MyReservationsPage />} />
+          <Route path="my/alerts" element={<NotificationsPage />} />
+          <Route path="profile" element={<ProfilePage />} />
+          <Route path="help" element={<HelpPage />} />
+        </Route>
       
       {/* Admin routes */}
       <Route path="/admin/*" element={<AdminLayout />}>
         <Route index element={<Navigate to="/admin/dashboard" replace />} />
         <Route path="dashboard" element={<Dashboard />} />
         <Route path="assets" element={<Assets />} />
+        <Route path="assets/all-regions" element={<AllRegionsEquipment />} />
         <Route path="reservations" element={<Reservations />} />
+        <Route path="checkout" element={<Checkout />} />
+        <Route path="monitoring" element={<Monitoring />} />
         <Route path="offices" element={<div className="p-8 text-center text-gray-500">임대사업소 관리 (개발 예정)</div>} />
         <Route path="maintenance" element={<div className="p-8 text-center text-gray-500">정비·점검 관리 (개발 예정)</div>} />
         <Route path="users" element={<div className="p-8 text-center text-gray-500">사용자·권한 관리 (개발 예정)</div>} />
@@ -52,9 +64,10 @@ function App() {
         <Route path="audit" element={<div className="p-8 text-center text-gray-500">감사 로그 (개발 예정)</div>} />
       </Route>
       
-      {/* Catch all */}
-      <Route path="*" element={<Navigate to="/" replace />} />
-    </Routes>
+        {/* Catch all */}
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
+    </CartProvider>
   );
 }
 

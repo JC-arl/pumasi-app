@@ -1,4 +1,3 @@
-
 import { useState, useMemo } from "react";
 import SearchBar from "./components/SearchBar";
 import RentalOfficeList from "./components/RentalOfficeList";

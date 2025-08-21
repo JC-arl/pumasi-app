@@ -11,11 +11,14 @@ import {
   X,
   Settings,
   Eye,
+  ShoppingCart,
 } from 'lucide-react';
 import SettingsModal from './SettingsModal';
 import AccessibilityModal from './AccessibilityModal';
 import { getUnreadCount } from '../../utils/notificationUtils';
 import { initializeAccessibility } from '../../utils/accessibilityUtils';
+import { colors } from '../../styles/colors';
+import { useCart } from '../../contexts/CartContext';
 
 const navigation = [
   { name: '홈', href: '/', icon: Home },
@@ -32,6 +35,7 @@ export default function UserLayout() {
   const [accessibilityModalOpen, setAccessibilityModalOpen] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
   const location = useLocation();
+  const { cart } = useCart();
 
   useEffect(() => {
     // 접근성 설정 초기화
@@ -65,7 +69,7 @@ export default function UserLayout() {
           <div className="fixed inset-0 bg-gray-900/80" onClick={() => setSidebarOpen(false)} />
           <div className="fixed inset-y-0 left-0 z-50 w-64 bg-white px-6 pb-4">
             <div className="flex h-16 shrink-0 items-center justify-between">
-              <h1 className="text-xl font-bold text-brand-navy">품앗이 - Pumasi</h1>
+              <h1 className="text-xl font-bold" style={{color: colors.primary.main}}>품앗이 - Pumasi</h1>
               <button
                 type="button"
                 className="-m-2.5 p-2.5 text-gray-700"
@@ -88,11 +92,11 @@ export default function UserLayout() {
                             : 'text-gray-700 hover:bg-gray-50'
                         }`}
                         style={isActive ? {
-                          backgroundColor: '#CBDCEB',
-                          color: '#133E87'
+                          backgroundColor: colors.primary.accent,
+                          color: colors.primary.main
                         } : {}}
                         onMouseEnter={(e) => {
-                          if (!isActive) e.target.style.color = '#133E87'
+                          if (!isActive) e.target.style.color = colors.primary.main
                         }}
                         onMouseLeave={(e) => {
                           if (!isActive) e.target.style.color = '#374151'
@@ -121,7 +125,7 @@ export default function UserLayout() {
                       setSidebarOpen(false);
                     }}
                     className="group flex gap-x-3 rounded-md p-3 text-sm leading-6 font-semibold text-gray-700 hover:bg-gray-50 w-full transition-colors"
-                    onMouseEnter={(e) => e.target.style.color = '#133E87'}
+                    onMouseEnter={(e) => e.target.style.color = colors.primary.main}
                     onMouseLeave={(e) => e.target.style.color = '#374151'}
                   >
                     <Eye className="h-6 w-6 shrink-0" />
@@ -141,7 +145,7 @@ export default function UserLayout() {
             <div className="flex md:absolute md:inset-y-0 md:left-0 lg:static xl:col-span-2">
               <div className="flex flex-shrink-0 items-center">
                 <Link to="/">
-                  <h1 className="text-2xl font-bold text-brand-navy">품앗이 - Pumasi</h1>
+                  <h1 className="text-2xl font-bold" style={{color: colors.primary.main}}>품앗이 - Pumasi</h1>
                 </Link>
               </div>
             </div>
@@ -172,8 +176,8 @@ export default function UserLayout() {
                           : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                       }`}
                       style={isActive ? {
-                        borderBottomColor: '#133E87',
-                        color: '#133E87'
+                        borderBottomColor: colors.primary.main,
+                        color: colors.primary.main
                       } : {}}
                     >
                       <div className="relative mr-2">
@@ -193,11 +197,26 @@ export default function UserLayout() {
 
             {/* Right side */}
             <div className="hidden lg:flex lg:items-center lg:justify-end xl:col-span-2 space-x-2">
+              <Link
+                to="/cart"
+                className="flex-shrink-0 rounded-full bg-white p-2 text-gray-400 focus:outline-none focus:ring-2 focus:ring-offset-2 transition-colors relative"
+                style={{'--tw-ring-color': colors.primary.main} as React.CSSProperties}
+                onMouseEnter={(e) => e.target.style.color = colors.primary.main}
+                onMouseLeave={(e) => e.target.style.color = '#9CA3AF'}
+                title="장바구니"
+              >
+                <ShoppingCart className="h-5 w-5" />
+                {cart.totalItems > 0 && (
+                  <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                    {cart.totalItems > 99 ? '99+' : cart.totalItems}
+                  </span>
+                )}
+              </Link>
               <button
                 onClick={() => setAccessibilityModalOpen(true)}
                 className="flex-shrink-0 rounded-full bg-white p-2 text-gray-400 focus:outline-none focus:ring-2 focus:ring-offset-2 transition-colors"
-                style={{'--tw-ring-color': '#133E87'} as React.CSSProperties}
-                onMouseEnter={(e) => e.target.style.color = '#133E87'}
+                style={{'--tw-ring-color': colors.primary.main} as React.CSSProperties}
+                onMouseEnter={(e) => e.target.style.color = colors.primary.main}
                 onMouseLeave={(e) => e.target.style.color = '#9CA3AF'}
                 title="접근성 설정"
               >
@@ -206,7 +225,7 @@ export default function UserLayout() {
               <button
                 onClick={() => setSettingsModalOpen(true)}
                 className="flex-shrink-0 rounded-full bg-white p-2 text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2"
-                style={{'--tw-ring-color': '#133E87'} as React.CSSProperties}
+                style={{'--tw-ring-color': colors.primary.main} as React.CSSProperties}
                 title="설정"
               >
                 <Settings className="h-5 w-5" />
@@ -248,8 +267,8 @@ export default function UserLayout() {
                     : 'text-gray-500'
                 }`}
                 style={isActive ? {
-                  color: '#133E87',
-                  backgroundColor: '#CBDCEB'
+                  color: colors.primary.main,
+                  backgroundColor: colors.primary.accent
                 } : {}}
               >
                 <div className="relative">

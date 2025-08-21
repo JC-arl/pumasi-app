@@ -1,16 +1,14 @@
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Wrench, MapPin, Phone, ShoppingCart, Check } from 'lucide-react';
+import { ArrowLeft, Wrench, MapPin, Phone } from 'lucide-react';
 import { kimcheonMachinery } from '../../data/kimcheonMachinery';
 import { mockRentalOffices } from '../../data/mockData';
-import { getAvailableCount } from '../../utils/reservationUtils';
-import { useCart } from '../../contexts/CartContext';
+import { createReservation, getAvailableCount } from '../../utils/reservationUtils';
+import { createReservationNotification } from '../../utils/notificationUtils';
 import type { Machinery, MachinerySpecification } from '../../types/rental';
-import { colors } from '../../styles/colors';
 
 export default function AssetDetailPage() {
   const { machineryId, id } = useParams<{ machineryId?: string; id?: string }>();
   const navigate = useNavigate();
-  const { addToCart, isInCart } = useCart();
 
   // machineryId가 있으면 사용하고, 없으면 id를 사용 (기존 호환성)
   const targetId = machineryId || id;
@@ -55,33 +53,6 @@ export default function AssetDetailPage() {
     });
     
     navigate(`/reserve?${params.toString()}`);
-  };
-
-  const handleAddToCart = (specification: MachinerySpecification) => {
-    const availableCount = getAvailableCount(specification);
-    
-    if (availableCount === 0) {
-      alert('현재 예약 가능한 농기계가 없습니다.');
-      return;
-    }
-
-    if (isInCart(machinery.id, specification.id)) {
-      alert('이미 장바구니에 추가된 장비입니다.');
-      return;
-    }
-
-    addToCart({
-      machineryId: machinery.id,
-      machineryName: machinery.name,
-      specificationId: specification.id,
-      specification: specification.specification,
-      manufacturer: specification.manufacturer,
-      rentalPrice: specification.rentalPrice,
-      officeName: office?.name || '알 수 없음',
-      officeId: office?.id || '',
-    });
-
-    alert('장바구니에 추가되었습니다!');
   };
 
   return (
@@ -173,68 +144,17 @@ export default function AssetDetailPage() {
                     <span className="text-sm text-gray-500">/일</span>
                   </div>
                   
-                  <div className="flex space-x-2">
-                    <button
-                      onClick={() => handleAddToCart(spec)}
-                      disabled={getAvailableCount(spec) === 0 || isInCart(machinery.id, spec.id)}
-                      className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-                        getAvailableCount(spec) === 0
-                          ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                          : isInCart(machinery.id, spec.id)
-                          ? 'bg-gray-100 text-gray-600 cursor-not-allowed'
-                          : 'border border-gray-300 text-gray-700 hover:bg-gray-50'
-                      }`}
-                      style={!isInCart(machinery.id, spec.id) && getAvailableCount(spec) > 0 ? {
-                        borderColor: colors.primary.main,
-                        color: colors.primary.main,
-                      } : {}}
-                      onMouseEnter={(e) => {
-                        if (!isInCart(machinery.id, spec.id) && getAvailableCount(spec) > 0) {
-                          (e.target as HTMLElement).style.backgroundColor = colors.primary.light + '20';
-                        }
-                      }}
-                      onMouseLeave={(e) => {
-                        if (!isInCart(machinery.id, spec.id) && getAvailableCount(spec) > 0) {
-                          (e.target as HTMLElement).style.backgroundColor = '';
-                        }
-                      }}
-                    >
-                      {isInCart(machinery.id, spec.id) ? (
-                        <>
-                          <Check className="h-4 w-4 inline mr-1" />
-                          담김
-                        </>
-                      ) : (
-                        <>
-                          <ShoppingCart className="h-4 w-4 inline mr-1" />
-                          장비 담기
-                        </>
-                      )}
-                    </button>
-                    
-                    <button
-                      onClick={() => handleReservation(spec)}
-                      disabled={getAvailableCount(spec) === 0}
-                      className={`px-6 py-2 rounded-lg font-medium transition-colors ${
-                        getAvailableCount(spec) > 0
-                          ? 'text-white'
-                          : 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                      }`}
-                      style={getAvailableCount(spec) > 0 ? {backgroundColor: colors.button.primary} : {}}
-                      onMouseEnter={(e) => {
-                        if (getAvailableCount(spec) > 0) {
-                          (e.target as HTMLElement).style.backgroundColor = colors.button.primaryHover;
-                        }
-                      }}
-                      onMouseLeave={(e) => {
-                        if (getAvailableCount(spec) > 0) {
-                          (e.target as HTMLElement).style.backgroundColor = colors.button.primary;
-                        }
-                      }}
-                    >
-                      {getAvailableCount(spec) > 0 ? '예약하기' : '예약 불가'}
-                    </button>
-                  </div>
+                  <button
+                    onClick={() => handleReservation(spec)}
+                    disabled={getAvailableCount(spec) === 0}
+                    className={`px-6 py-2 rounded-lg font-medium ${
+                      getAvailableCount(spec) > 0
+                        ? 'bg-green-600 text-white hover:bg-green-700'
+                        : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                    }`}
+                  >
+                    {getAvailableCount(spec) > 0 ? '예약하기' : '예약 불가'}
+                  </button>
                 </div>
 
                 <div className="mt-2 text-xs text-gray-500">

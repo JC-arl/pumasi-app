@@ -25,6 +25,21 @@ export interface Office {
   status: 'ACTIVE' | 'INACTIVE';
   operatingHours: string;
   deliveryAvailable: boolean;
+  region: string;
+}
+
+export interface Region {
+  id: string;
+  name: string;
+  offices: string[];
+}
+
+export interface AdminUser {
+  id: string;
+  name: string;
+  role: UserRole;
+  assignedRegions: string[];
+  selectedRegion: string | null;
 }
 
 export type AssetStatus = 
