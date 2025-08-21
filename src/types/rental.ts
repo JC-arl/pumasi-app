@@ -17,3 +17,23 @@ export interface MapCenter {
   lat: number;
   lng: number;
 }
+
+export interface MachinerySpecification {
+  id: string;
+  specification: string;
+  manufacturer: string;
+  totalCount: number;
+  availableCount: number;
+  rentalPrice: number;
+  description: string;
+  standardCode: string;
+}
+
+export interface Machinery {
+  id: string;
+  name: string;
+  image: string;
+  category: string;
+  officeId: string;
+  specifications: MachinerySpecification[];
+}

@@ -83,6 +83,10 @@ const Map = ({ rentalOffices, onMarkerClick, selectedOffice }: MapProps) => {
           onMarkerClick(office);
         });
 
+        marker.addListener("dblclick", () => {
+          onMarkerClick(office);
+        });
+
         return marker;
       });
 

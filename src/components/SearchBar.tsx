@@ -27,7 +27,7 @@ const SearchBar = ({ onSearch, placeholder = "임대소 이름이나 지역을 �
           value={query}
           onChange={handleChange}
           placeholder={placeholder}
-          className="w-full px-4 py-3 pr-12 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none"
+          className="w-full px-4 py-3 pr-12 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none text-gray-900 placeholder-gray-500 bg-white"
         />
         <button
           type="submit"

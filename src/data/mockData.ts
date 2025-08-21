@@ -2,6 +2,55 @@ import type { RentalOffice } from "../types/rental";
 
 export const mockRentalOffices: RentalOffice[] = [
   {
+    id: "kimcheon-edu",
+    name: "김천시 농업기술센터",
+    address: "경상북도 김천시 교육원로 123",
+    phone: "054-420-6400",
+    website: null,
+    lat: 36.1396,
+    lng: 128.1178,
+    description: "김천시 농업인을 위한 농기계 임대 서비스입니다.",
+    operatingHours: "평일 09:00-18:00, 토요일 09:00-12:00",
+    availableMachinery: [
+      "트랙터", "경운기", "관리기", "땅속작물수확기", "탈곡기", 
+      "자주형파종기", "이앙기", "벼수확기", "콤바인", "이랑쟁기"
+    ],
+    rating: 4.5,
+    reviewCount: 28,
+  },
+  {
+    id: "kimcheon-south",
+    name: "김천시 남부 농기계임대사업소",
+    address: "경상북도 김천시 남면 농기계로 456",
+    phone: "054-420-6450",
+    website: null,
+    lat: 36.1100,
+    lng: 128.1300,
+    description: "김천시 남부지역 농업인을 위한 농기계 임대 서비스입니다.",
+    operatingHours: "평일 09:00-17:30",
+    availableMachinery: [
+      "트랙터", "땅속작물수확기", "탈곡기", "콤바인", "이랑쟁기"
+    ],
+    rating: 4.2,
+    reviewCount: 15,
+  },
+  {
+    id: "kimcheon-north",
+    name: "김천시 북부 농기계임대사업소", 
+    address: "경상북도 김천시 아포읍 농업로 789",
+    phone: "054-420-6470",
+    website: null,
+    lat: 36.1700,
+    lng: 128.1000,
+    description: "김천시 북부지역 농업인을 위한 농기계 임대 서비스입니다.",
+    operatingHours: "평일 09:00-17:30",
+    availableMachinery: [
+      "트랙터", "경운기", "관리기", "이랑쟁기"
+    ],
+    rating: 4.0,
+    reviewCount: 8,
+  },
+  {
     id: "1",
     name: "사업소명",
     address: "소재지도로명주소 (소재지지번주소)",
