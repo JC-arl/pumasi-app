@@ -20,12 +20,16 @@ const RentalOfficeList = ({
       {offices.map((office) => (
         <div
           key={office.id}
-          onClick={() => onOfficeSelect(office)}
+          onDoubleClick={() => onOfficeSelect(office)}
           className={`p-4 border rounded-lg cursor-pointer transition-all hover:shadow-md ${
             selectedOffice?.id === office.id
-              ? "border-green-500 bg-green-50"
+              ? "border-gray-200 hover:border-gray-300"
               : "border-gray-200 hover:border-gray-300"
           }`}
+          style={selectedOffice?.id === office.id ? {
+            borderColor: '#133E87',
+            backgroundColor: '#CBDCEB'
+          } : {}}
         >
           <div className="flex justify-between items-start mb-2">
             <h3 className="font-semibold text-gray-900">{office.name}</h3>

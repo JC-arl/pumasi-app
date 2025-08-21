@@ -1,0 +1,400 @@
+/* 접근성 관련 CSS */
+
+/* 폰트 크기 설정 */
+.text-small {
+  --font-size-base: 0.875rem;
+  --font-size-sm: 0.75rem;
+  --font-size-lg: 1rem;
+  --font-size-xl: 1.125rem;
+  --font-size-2xl: 1.25rem;
+  --font-size-3xl: 1.5rem;
+}
+
+.text-medium {
+  --font-size-base: 1rem;
+  --font-size-sm: 0.875rem;
+  --font-size-lg: 1.125rem;
+  --font-size-xl: 1.25rem;
+  --font-size-2xl: 1.5rem;
+  --font-size-3xl: 1.875rem;
+}
+
+.text-large {
+  --font-size-base: 1.25rem;
+  --font-size-sm: 1rem;
+  --font-size-lg: 1.5rem;
+  --font-size-xl: 1.75rem;
+  --font-size-2xl: 2rem;
+  --font-size-3xl: 2.25rem;
+}
+
+.text-extra-large {
+  --font-size-base: 1.5rem;
+  --font-size-sm: 1.25rem;
+  --font-size-lg: 1.75rem;
+  --font-size-xl: 2rem;
+  --font-size-2xl: 2.5rem;
+  --font-size-3xl: 3rem;
+}
+
+/* 폰트 크기 적용 */
+.text-small *,
+.text-medium *,
+.text-large *,
+.text-extra-large * {
+  font-size: var(--font-size-base) !important;
+}
+
+.text-small .text-sm,
+.text-medium .text-sm,
+.text-large .text-sm,
+.text-extra-large .text-sm {
+  font-size: var(--font-size-sm) !important;
+}
+
+.text-small .text-lg,
+.text-medium .text-lg,
+.text-large .text-lg,
+.text-extra-large .text-lg {
+  font-size: var(--font-size-lg) !important;
+}
+
+.text-small .text-xl,
+.text-medium .text-xl,
+.text-large .text-xl,
+.text-extra-large .text-xl {
+  font-size: var(--font-size-xl) !important;
+}
+
+.text-small .text-2xl,
+.text-medium .text-2xl,
+.text-large .text-2xl,
+.text-extra-large .text-2xl {
+  font-size: var(--font-size-2xl) !important;
+}
+
+.text-small .text-3xl,
+.text-medium .text-3xl,
+.text-large .text-3xl,
+.text-extra-large .text-3xl {
+  font-size: var(--font-size-3xl) !important;
+}
+
+/* 고대비 모드 */
+.high-contrast {
+  --bg-primary: #ffffff;
+  --bg-secondary: #000000;
+  --text-primary: #000000;
+  --text-secondary: #ffffff;
+  --border-color: #000000;
+  --accent-bg: #133E87;
+  --accent-text: #ffffff;
+  --success-bg: #608BC1;
+  --success-text: #ffffff;
+  --warning-bg: #cc6600;
+  --warning-text: #ffffff;
+}
+
+/* 기본 배경과 텍스트 - 고대비 모드에서만 적용 */
+.high-contrast body,
+.high-contrast .high-contrast-bg {
+  background-color: var(--bg-primary) !important;
+  color: var(--text-primary) !important;
+}
+
+/* 카드나 박스 형태의 요소들 */
+.high-contrast .bg-white,
+.high-contrast .bg-gray-50,
+.high-contrast .bg-gray-100 {
+  background-color: var(--bg-primary) !important;
+  color: var(--text-primary) !important;
+  border: 2px solid var(--border-color) !important;
+}
+
+/* 어두운 배경의 요소들 */
+.high-contrast .bg-gray-800,
+.high-contrast .bg-gray-900,
+.high-contrast [class*="bg-gray-"] {
+  background-color: var(--bg-secondary) !important;
+  color: var(--text-secondary) !important;
+  border: 2px solid var(--text-secondary) !important;
+}
+
+/* 텍스트 색상 */
+.high-contrast .text-gray-900,
+.high-contrast .text-gray-800,
+.high-contrast .text-gray-700,
+.high-contrast .text-gray-600,
+.high-contrast .text-gray-500 {
+  color: var(--text-primary) !important;
+}
+
+.high-contrast .text-white,
+.high-contrast .text-gray-100,
+.high-contrast .text-gray-200 {
+  color: var(--text-secondary) !important;
+}
+
+/* 버튼과 액션 요소 */
+.high-contrast .bg-blue-600,
+.high-contrast .bg-blue-700,
+.high-contrast .bg-indigo-600,
+.high-contrast .bg-indigo-700 {
+  background-color: var(--accent-bg) !important;
+  color: var(--accent-text) !important;
+  border: 2px solid var(--accent-bg) !important;
+}
+
+.high-contrast .bg-green-600,
+.high-contrast .bg-green-700 {
+  background-color: var(--success-bg) !important;
+  color: var(--success-text) !important;
+  border: 2px solid var(--success-bg) !important;
+}
+
+/* 호버 효과 */
+.high-contrast .bg-blue-600:hover,
+.high-contrast .bg-blue-700:hover {
+  background-color: var(--bg-secondary) !important;
+  color: var(--accent-bg) !important;
+  border: 2px solid var(--accent-bg) !important;
+}
+
+.high-contrast .bg-green-600:hover,
+.high-contrast .bg-green-700:hover {
+  background-color: var(--bg-secondary) !important;
+  color: var(--success-bg) !important;
+  border: 2px solid var(--success-bg) !important;
+}
+
+/* 링크 */
+.high-contrast a {
+  color: var(--accent-bg) !important;
+  text-decoration: underline !important;
+  font-weight: bold !important;
+}
+
+/* 그라데이션 제거 */
+.high-contrast [class*="gradient"],
+.high-contrast .bg-gradient-to-r {
+  background: var(--bg-primary) !important;
+  border: 2px solid var(--border-color) !important;
+}
+
+/* 모달과 오버레이 */
+.high-contrast .bg-black,
+.high-contrast [class*="bg-opacity"] {
+  background-color: var(--bg-secondary) !important;
+  opacity: 0.9 !important;
+}
+
+/* 입력 필드 */
+.high-contrast input,
+.high-contrast textarea,
+.high-contrast select {
+  background-color: var(--bg-primary) !important;
+  color: var(--text-primary) !important;
+  border: 3px solid var(--border-color) !important;
+}
+
+.high-contrast input:focus,
+.high-contrast textarea:focus,
+.high-contrast select:focus {
+  border-color: var(--accent-bg) !important;
+  outline: 2px solid var(--accent-bg) !important;
+  outline-offset: 2px !important;
+}
+
+/* 애니메이션 감소 */
+.reduce-motion *,
+.reduce-motion *::before,
+.reduce-motion *::after {
+  animation-duration: 0.01ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.01ms !important;
+  scroll-behavior: auto !important;
+}
+
+/* 고령자 모드 */
+.elderly-mode {
+  /* 기본 설정들이 자동으로 적용됨 */
+}
+
+.elderly-mode * {
+  font-weight: 600 !important; /* 글자를 더 굵게 */
+}
+
+.elderly-mode button,
+.elderly-mode .cursor-pointer {
+  min-height: 48px !important; /* 최소 터치 영역 */
+  padding: 12px 16px !important;
+}
+
+.elderly-mode input,
+.elderly-mode select,
+.elderly-mode textarea {
+  min-height: 48px !important;
+  padding: 12px !important;
+  font-size: 1.25rem !important;
+  border: 2px solid #374151 !important;
+}
+
+.elderly-mode .shadow-sm {
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3) !important;
+}
+
+/* 단순화된 UI */
+/* 그림자 효과 제거 */
+.simplified-ui .shadow-sm,
+.simplified-ui .shadow-md,
+.simplified-ui .shadow-lg,
+.simplified-ui .shadow-xl,
+.simplified-ui [class*="shadow-"] {
+  box-shadow: none !important;
+  border: 1px solid #d1d5db !important;
+}
+
+/* 그라데이션 제거 */
+.simplified-ui .gradient,
+.simplified-ui [class*="gradient"],
+.simplified-ui .bg-gradient-to-r,
+.simplified-ui .bg-gradient-to-l,
+.simplified-ui .bg-gradient-to-t,
+.simplified-ui .bg-gradient-to-b {
+  background: #ffffff !important;
+  background-image: none !important;
+}
+
+/* 둥근 모서리 단순화 */
+.simplified-ui .rounded-xl,
+.simplified-ui .rounded-lg,
+.simplified-ui .rounded-2xl,
+.simplified-ui .rounded-3xl {
+  border-radius: 0.375rem !important;
+}
+
+/* 복잡한 애니메이션 및 전환 효과 제거 */
+.simplified-ui * {
+  transition: none !important;
+  animation: none !important;
+  transform: none !important;
+}
+
+/* 장식적 요소 숨기기 */
+.simplified-ui .decoration,
+.simplified-ui .decorative,
+.simplified-ui [class*="decoration"],
+.simplified-ui .bg-pattern,
+.simplified-ui [class*="pattern"] {
+  display: none !important;
+}
+
+/* 복잡한 호버 효과 제거 */
+.simplified-ui *:hover {
+  transform: none !important;
+  box-shadow: none !important;
+}
+
+/* 아이콘 크기 일관성 */
+.simplified-ui svg,
+.simplified-ui .icon,
+.simplified-ui [class*="icon"] {
+  width: 20px !important;
+  height: 20px !important;
+}
+
+/* 불필요한 색상 변형 제거 */
+.simplified-ui .text-blue-500,
+.simplified-ui .text-blue-600,
+.simplified-ui .text-blue-700 {
+  color: #1d4ed8 !important;
+}
+
+.simplified-ui .text-green-500,
+.simplified-ui .text-green-600,
+.simplified-ui .text-green-700 {
+  color: #059669 !important;
+}
+
+.simplified-ui .text-red-500,
+.simplified-ui .text-red-600,
+.simplified-ui .text-red-700 {
+  color: #dc2626 !important;
+}
+
+/* 복잡한 레이아웃 단순화 */
+.simplified-ui .grid-cols-3,
+.simplified-ui .grid-cols-4,
+.simplified-ui .grid-cols-5,
+.simplified-ui .grid-cols-6 {
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+}
+
+/* 모바일에서는 단일 열로 */
+@media (max-width: 640px) {
+  .simplified-ui .grid-cols-2,
+  .simplified-ui .grid-cols-3,
+  .simplified-ui .grid-cols-4 {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+/* 불필요한 여백 정리 */
+.simplified-ui .space-x-8 > * + *,
+.simplified-ui .space-x-6 > * + * {
+  margin-left: 1rem !important;
+}
+
+.simplified-ui .space-y-8 > * + *,
+.simplified-ui .space-y-6 > * + * {
+  margin-top: 1rem !important;
+}
+
+/* 배지, 라벨 등 장식 요소 단순화 */
+.simplified-ui .badge,
+.simplified-ui .pill,
+.simplified-ui [class*="badge"],
+.simplified-ui [class*="pill"] {
+  background-color: #e5e7eb !important;
+  color: #374151 !important;
+  border-radius: 0.25rem !important;
+  padding: 0.25rem 0.5rem !important;
+}
+
+/* 포커스 표시 향상 */
+.elderly-mode *:focus,
+.high-contrast *:focus {
+  outline: 3px solid #fbbf24 !important;
+  outline-offset: 2px !important;
+}
+
+/* 링크와 버튼 스타일 향상 */
+.elderly-mode a,
+.elderly-mode button {
+  text-decoration: underline !important;
+  text-underline-offset: 2px !important;
+}
+
+.elderly-mode .bg-green-600:hover,
+.elderly-mode .bg-blue-600:hover {
+  background-color: #065f46 !important;
+  transform: scale(1.05) !important;
+}
+
+/* 모바일에서 터치 영역 확대 */
+@media (max-width: 768px) {
+  .elderly-mode button,
+  .elderly-mode .cursor-pointer,
+  .elderly-mode a {
+    min-height: 56px !important;
+    padding: 16px !important;
+  }
+  
+  .elderly-mode .text-sm {
+    font-size: 1rem !important;
+  }
+  
+  .elderly-mode .text-xs {
+    font-size: 0.875rem !important;
+  }
+}
