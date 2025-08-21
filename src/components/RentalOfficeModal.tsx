@@ -1,4 +1,5 @@
 import type { RentalOffice } from "../types/rental";
+import { colors } from '../styles/colors';
 
 interface RentalOfficeModalProps {
   office: RentalOffice | null;
@@ -54,7 +55,11 @@ const RentalOfficeModal = ({
                 {office.availableMachinery.map((machinery, index) => (
                   <span
                     key={index}
-                    className="px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm"
+                    className="px-3 py-1 rounded-full text-sm"
+                    style={{
+                      backgroundColor: colors.primary.accent,
+                      color: colors.primary.main
+                    }}
                   >
                     {machinery}
                   </span>
@@ -93,7 +98,12 @@ const RentalOfficeModal = ({
                   href={office.website}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-block w-full text-center bg-green-600 text-white py-2 px-4 rounded-lg hover:bg-green-700 transition-colors"
+                  className="inline-block w-full text-center text-white py-2 px-4 rounded-lg transition-colors"
+                  style={{
+                    backgroundColor: colors.button.primary
+                  }}
+                  onMouseEnter={(e) => (e.target as HTMLElement).style.backgroundColor = colors.button.primaryHover}
+                  onMouseLeave={(e) => (e.target as HTMLElement).style.backgroundColor = colors.button.primary}
                 >
                   웹사이트 방문
                 </a>

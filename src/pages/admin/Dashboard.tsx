@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import AdminCard from '../../components/admin/AdminCard';
 import {
   Calendar,
@@ -6,30 +6,31 @@ import {
   Activity,
   AlertTriangle,
 } from 'lucide-react';
-// 차트 라이브러리는 임시로 주석 처리
-// import {
-//   LineChart,
-//   Line,
-//   AreaChart,
-//   Area,
-//   XAxis,
-//   YAxis,
-//   CartesianGrid,
-//   Tooltip,
-//   ResponsiveContainer,
-//   BarChart,
-//   Bar,
-// } from 'recharts';
+import type { ReservationRequest } from '../../types/reservation';
+import type { CheckoutItem } from '../../types/checkout';
+import { kimcheonMachinery } from '../../data/kimcheonMachinery';
+import { jeoubukMachinery } from '../../data/jeoubukMachinery';
+// 주간 트렌드 데이터
+const weeklyData = [
+  { name: '월', reservations: 35, usage: 75, maintenance: 8 },
+  { name: '화', reservations: 28, usage: 68, maintenance: 5 },
+  { name: '수', reservations: 42, usage: 85, maintenance: 12 },
+  { name: '목', reservations: 38, usage: 78, maintenance: 9 },
+  { name: '금', reservations: 45, usage: 92, maintenance: 15 },
+  { name: '토', reservations: 52, usage: 88, maintenance: 18 },
+  { name: '일', reservations: 42, usage: 80, maintenance: 14 },
+];
 
-// const weeklyData = [
-//   { name: '월', reservations: 35, usage: 420, maintenance: 24 },
-//   { name: '화', reservations: 28, usage: 380, maintenance: 18 },
-//   { name: '수', reservations: 42, usage: 520, maintenance: 32 },
-//   { name: '목', reservations: 38, usage: 450, maintenance: 28 },
-//   { name: '금', reservations: 45, usage: 580, maintenance: 36 },
-//   { name: '토', reservations: 52, usage: 640, maintenance: 42 },
-//   { name: '일', reservations: 42, usage: 520, maintenance: 35 },
-// ];
+// 일별 사용률 데이터 (최근 7일)
+const dailyUsageData = [
+  { date: '12/14', usage: 82, available: 18 },
+  { date: '12/15', usage: 75, available: 25 },
+  { date: '12/16', usage: 88, available: 12 },
+  { date: '12/17', usage: 79, available: 21 },
+  { date: '12/18', usage: 95, available: 5 },
+  { date: '12/19', usage: 91, available: 9 },
+  { date: '12/20', usage: 87, available: 13 },
+];
 
 const recentAlerts = [
   {
@@ -55,23 +56,128 @@ const recentAlerts = [
   },
 ];
 
-// 간단한 더미 통계 데이터
-const mockStats = {
-  todayReservations: 25,
-  overdueReturns: 3,
-  utilizationRate: 78.2,
-  maintenanceIssues: 5,
-};
-
 export default function Dashboard() {
+  const [stats, setStats] = useState({
+    todayReservations: 0,
+    overdueReturns: 0,
+    utilizationRate: 0,
+    maintenanceIssues: 0,
+  });
+
+  const [recentAlerts, setRecentAlerts] = useState<any[]>([]);
+
+  useEffect(() => {
+    const calculateStats = () => {
+      // 예약 데이터 가져오기
+      const reservationRequests: ReservationRequest[] = JSON.parse(
+        localStorage.getItem('reservationRequests') || '[]'
+      );
+
+      // 출고/임대 중 데이터 가져오기
+      const checkoutItems: CheckoutItem[] = JSON.parse(
+        localStorage.getItem('checkoutItems') || '[]'
+      );
+
+      // 오늘 날짜
+      const today = new Date().toDateString();
+
+      // 오늘 예약 신청 수
+      const todayReservations = reservationRequests.filter(req => 
+        new Date(req.submittedAt).toDateString() === today
+      ).length;
+
+      // 지연 반납 계산
+      const overdueReturns = checkoutItems.filter(item => {
+        if (item.status !== 'CHECKED_OUT') return false;
+        const endDate = new Date(item.endDate);
+        const now = new Date();
+        return now > endDate;
+      }).length;
+
+      // 가동률 계산 (임대 중인 농기계 / 전체 농기계)
+      // 김천시 + 전북특별자치도 전체 농기계 수 계산
+      const kimcheonTotalCount = kimcheonMachinery.reduce((total, machinery) => {
+        return total + machinery.specifications.reduce((specTotal, spec) => specTotal + spec.totalCount, 0);
+      }, 0);
+      
+      const jeoubukTotalCount = jeoubukMachinery.reduce((total, machinery) => {
+        return total + machinery.specifications.reduce((specTotal, spec) => specTotal + spec.totalCount, 0);
+      }, 0);
+      
+      const totalAssets = kimcheonTotalCount + jeoubukTotalCount;
+      const inUseAssets = checkoutItems.filter(item => item.status === 'CHECKED_OUT').length;
+      const utilizationRate = totalAssets > 0 ? Math.round((inUseAssets / totalAssets) * 100 * 10) / 10 : 0;
+
+      // 정비 필요 건수 (임의로 일부 계산)
+      const maintenanceIssues = Math.floor(Math.random() * 3) + overdueReturns;
+
+      setStats({
+        todayReservations,
+        overdueReturns,
+        utilizationRate,
+        maintenanceIssues,
+      });
+
+      // 최근 알림 생성
+      const alerts = [];
+      
+      if (overdueReturns > 0) {
+        alerts.push({
+          id: 1,
+          type: 'error',
+          title: `반납 지연 ${overdueReturns}건`,
+          message: `${overdueReturns}건의 농기계 반납이 지연되었습니다.`,
+          time: '방금 전',
+        });
+      }
+
+      if (todayReservations > 0) {
+        alerts.push({
+          id: 2,
+          type: 'info',
+          title: '새로운 예약 신청',
+          message: `오늘 ${todayReservations}건의 새로운 예약 신청이 있습니다.`,
+          time: '30분 전',
+        });
+      }
+
+      if (maintenanceIssues > 0) {
+        alerts.push({
+          id: 3,
+          type: 'warning',
+          title: '정비 필요',
+          message: `${maintenanceIssues}건의 농기계에 정비가 필요합니다.`,
+          time: '1시간 전',
+        });
+      }
+
+      // 기본 알림이 없으면 샘플 알림 추가
+      if (alerts.length === 0) {
+        alerts.push({
+          id: 4,
+          type: 'info',
+          title: '시스템 정상 운영 중',
+          message: '모든 시스템이 정상적으로 운영되고 있습니다.',
+          time: '2시간 전',
+        });
+      }
+
+      setRecentAlerts(alerts);
+    };
+
+    calculateStats();
+    const interval = setInterval(calculateStats, 30000); // 30초마다 업데이트
+
+    return () => clearInterval(interval);
+  }, []);
 
   return (
     <div className="space-y-6">
       {/* Page header */}
       <div>
-        <h1 className="text-2xl font-semibold text-gray-900">대시보드</h1>
+        <h1 className="text-2xl font-semibold text-gray-900">대시보드 - 전체지역</h1>
         <p className="mt-2 text-sm text-gray-700">
-          농기계 임대 현황을 한눈에 확인하세요
+          김천시 및 전북특별자치도 농기계 임대 현황을 한눈에 확인하세요
         </p>
       </div>
 
@@ -79,52 +185,102 @@ export default function Dashboard() {
       <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
         <AdminCard
           title="오늘 예약"
-          value={mockStats.todayReservations}
-          change={{ value: '+12%', type: 'increase' }}
+          value={stats.todayReservations}
+          change={stats.todayReservations > 0 ? { value: `+${stats.todayReservations}`, type: 'increase' } : { value: '0', type: 'neutral' }}
           icon={<Calendar />}
         />
         <AdminCard
           title="지연 반납"
-          value={mockStats.overdueReturns}
-          change={{ value: '-25%', type: 'increase' }}
+          value={stats.overdueReturns}
+          change={stats.overdueReturns > 0 ? { value: `+${stats.overdueReturns}`, type: 'decrease' } : { value: '0', type: 'neutral' }}
           icon={<Clock />}
         />
         <AdminCard
           title="가동률"
-          value={`${mockStats.utilizationRate}%`}
-          change={{ value: '+5.4%', type: 'increase' }}
+          value={`${stats.utilizationRate}%`}
+          change={{ value: `${stats.utilizationRate}%`, type: stats.utilizationRate > 70 ? 'increase' : 'decrease' }}
           icon={<Activity />}
         />
         <AdminCard
           title="정비 건수"
-          value={mockStats.maintenanceIssues}
-          change={{ value: '+2', type: 'decrease' }}
+          value={stats.maintenanceIssues}
+          change={stats.maintenanceIssues > 0 ? { value: `+${stats.maintenanceIssues}`, type: 'decrease' } : { value: '0', type: 'neutral' }}
           icon={<AlertTriangle />}
         />
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* 주간 트렌드 차트 */}
-        <div className="lg:col-span-2 bg-white shadow rounded-lg p-6">
+        <div className="bg-white shadow rounded-lg p-6">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-lg font-medium text-gray-900">주간 트렌드</h3>
-            <div className="flex space-x-4 text-sm">
+            <div className="flex flex-wrap gap-3 text-sm">
               <div className="flex items-center">
-                <div className="w-3 h-3 bg-blue-500 rounded-full mr-2"></div>
-                예약수
+                <div className="w-3 h-3 rounded-full mr-2" style={{backgroundColor: '#67AE6E'}}></div>
+                <span className="text-gray-600">예약수</span>
               </div>
               <div className="flex items-center">
-                <div className="w-3 h-3 bg-green-500 rounded-full mr-2"></div>
-                사용시간
+                <div className="w-3 h-3 rounded-full mr-2" style={{backgroundColor: '#328E6E'}}></div>
+                <span className="text-gray-600">사용률(%)</span>
               </div>
               <div className="flex items-center">
-                <div className="w-3 h-3 bg-orange-500 rounded-full mr-2"></div>
-                정비시간
+                <div className="w-3 h-3 rounded-full mr-2" style={{backgroundColor: '#90C67C'}}></div>
+                <span className="text-gray-600">정비건수</span>
               </div>
             </div>
           </div>
-          <div className="h-[300px] flex items-center justify-center bg-gray-50 rounded">
-            <p className="text-gray-500">차트 로딩 중...</p>
+          <div className="h-[240px] p-4">
+            {/* 간단한 바차트 구현 */}
+            <div className="flex items-end justify-between h-full space-x-2">
+              {weeklyData.map((day, index) => (
+                <div key={day.name} className="flex-1 flex flex-col items-center max-w-16">
+                  <div className="relative w-full h-full flex flex-col justify-end mb-2">
+                    {/* 각 지표별 바 */}
+                    <div className="flex justify-center space-x-1 w-full">
+                      {/* 예약수 바 */}
+                      <div className="flex flex-col items-center w-4">
+                        <div 
+                          className="rounded-t transition-all duration-500 w-full"
+                          style={{
+                            backgroundColor: '#67AE6E',
+                            height: `${Math.max((day.reservations / 60) * 140, 8)}px`,
+                          }}
+                          title={`예약: ${day.reservations}건`}
+                        />
+                        <span className="text-xs text-gray-500 mt-1">{day.reservations}</span>
+                      </div>
+                      
+                      {/* 사용률 바 */}
+                      <div className="flex flex-col items-center w-4">
+                        <div 
+                          className="rounded-t transition-all duration-500 w-full"
+                          style={{
+                            backgroundColor: '#328E6E',
+                            height: `${Math.max((day.usage / 100) * 140, 8)}px`,
+                          }}
+                          title={`사용률: ${day.usage}%`}
+                        />
+                        <span className="text-xs text-gray-500 mt-1">{day.usage}%</span>
+                      </div>
+                      
+                      {/* 정비건수 바 */}
+                      <div className="flex flex-col items-center w-4">
+                        <div 
+                          className="rounded-t transition-all duration-500 w-full"
+                          style={{
+                            backgroundColor: '#90C67C',
+                            height: `${Math.max((day.maintenance / 20) * 140, 8)}px`,
+                          }}
+                          title={`정비: ${day.maintenance}건`}
+                        />
+                        <span className="text-xs text-gray-500 mt-1">{day.maintenance}</span>
+                      </div>
+                    </div>
+                  </div>
+                  <span className="text-sm font-medium text-gray-700 mt-2">{day.name}요일</span>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
 
@@ -134,7 +290,7 @@ export default function Dashboard() {
             <h3 className="text-lg font-medium text-gray-900">최근 알림</h3>
           </div>
           <div className="divide-y divide-gray-200">
-            {recentAlerts.map((alert) => (
+            {recentAlerts.length > 0 ? recentAlerts.map((alert) => (
               <div key={alert.id} className="p-6">
                 <div className="flex items-start space-x-3">
                   <div className={`flex-shrink-0 w-2 h-2 mt-2 rounded-full ${
@@ -154,7 +310,11 @@ export default function Dashboard() {
                   </div>
                 </div>
               </div>
-            ))}
+            )) : (
+              <div className="p-6 text-center text-gray-500">
+                <p className="text-sm">알림이 없습니다</p>
+              </div>
+            )}
           </div>
           <div className="px-6 py-3 bg-gray-50 text-center">
             <button className="text-sm text-blue-600 hover:text-blue-800">
@@ -166,11 +326,60 @@ export default function Dashboard() {
 
       {/* 추가 차트 - 사용률 히트맵 및 장비별 현황 */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* 사용률 차트 */}
+        {/* 일별 사용률 차트 - 막대 그래프만 */}
         <div className="bg-white shadow rounded-lg p-6">
-          <h3 className="text-lg font-medium text-gray-900 mb-4">일별 사용률</h3>
-          <div className="h-[200px] flex items-center justify-center bg-gray-50 rounded">
-            <p className="text-gray-500">사용률 차트</p>
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-lg font-medium text-gray-900">일별 사용률</h3>
+            <div className="flex items-center text-sm">
+              <div className="w-3 h-3 rounded-full mr-2" style={{backgroundColor: '#328E6E'}}></div>
+              <span className="text-gray-600">사용률(%)</span>
+            </div>
+          </div>
+          <div className="h-[200px] p-4">
+            {/* 막대 그래프로만 표시 - 식별 용이 */}
+            <div className="flex items-end justify-between h-full space-x-3">
+              {dailyUsageData.map((day, index) => (
+                <div key={day.date} className="flex flex-col items-center flex-1">
+                  <div className="relative w-full h-full mb-3 flex items-end">
+                    {/* 사용률만 막대로 표시 */}
+                    <div 
+                      className="w-full rounded-t-lg transition-all duration-700 hover:opacity-80 cursor-pointer"
+                      style={{
+                        backgroundColor: day.usage >= 90 ? '#dc2626' : 
+                                       day.usage >= 70 ? '#328E6E' : 
+                                       day.usage >= 50 ? '#67AE6E' : '#90C67C',
+                        height: `${Math.max((day.usage / 100) * 140, 12)}px`,
+                      }}
+                      title={`${day.date} 사용률: ${day.usage}%`}
+                    />
+                  </div>
+                  <div className="text-center">
+                    <div className="text-sm font-bold text-gray-900 mb-1">{day.usage}%</div>
+                    <div className="text-xs text-gray-500">{day.date}</div>
+                  </div>
+                </div>
+              ))}
+            </div>
+            
+            {/* 범례 - 사용률 구간별 색상 설명 */}
+            <div className="flex justify-center mt-4 space-x-4 text-xs">
+              <div className="flex items-center">
+                <div className="w-3 h-3 rounded-full mr-1" style={{backgroundColor: '#dc2626'}}></div>
+                <span className="text-gray-600">90%+ (포화)</span>
+              </div>
+              <div className="flex items-center">
+                <div className="w-3 h-3 rounded-full mr-1" style={{backgroundColor: '#328E6E'}}></div>
+                <span className="text-gray-600">70-89% (높음)</span>
+              </div>
+              <div className="flex items-center">
+                <div className="w-3 h-3 rounded-full mr-1" style={{backgroundColor: '#67AE6E'}}></div>
+                <span className="text-gray-600">50-69% (보통)</span>
+              </div>
+              <div className="flex items-center">
+                <div className="w-3 h-3 rounded-full mr-1" style={{backgroundColor: '#90C67C'}}></div>
+                <span className="text-gray-600">50% 미만 (여유)</span>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -182,7 +391,7 @@ export default function Dashboard() {
               <span className="text-sm font-medium text-gray-600">트랙터</span>
               <div className="flex items-center space-x-2">
                 <div className="w-32 bg-gray-200 rounded-full h-2">
-                  <div className="bg-blue-600 h-2 rounded-full" style={{ width: '85%' }}></div>
+                  <div className="h-2 rounded-full" style={{ width: '85%', backgroundColor: '#328E6E' }}></div>
                 </div>
                 <span className="text-sm text-gray-500">85%</span>
               </div>
@@ -191,7 +400,7 @@ export default function Dashboard() {
               <span className="text-sm font-medium text-gray-600">경운기</span>
               <div className="flex items-center space-x-2">
                 <div className="w-32 bg-gray-200 rounded-full h-2">
-                  <div className="bg-green-600 h-2 rounded-full" style={{ width: '72%' }}></div>
+                  <div className="h-2 rounded-full" style={{ width: '72%', backgroundColor: '#67AE6E' }}></div>
                 </div>
                 <span className="text-sm text-gray-500">72%</span>
               </div>
@@ -200,7 +409,7 @@ export default function Dashboard() {
               <span className="text-sm font-medium text-gray-600">콤바인</span>
               <div className="flex items-center space-x-2">
                 <div className="w-32 bg-gray-200 rounded-full h-2">
-                  <div className="bg-orange-600 h-2 rounded-full" style={{ width: '68%' }}></div>
+                  <div className="h-2 rounded-full" style={{ width: '68%', backgroundColor: '#90C67C' }}></div>
                 </div>
                 <span className="text-sm text-gray-500">68%</span>
               </div>
@@ -209,7 +418,7 @@ export default function Dashboard() {
               <span className="text-sm font-medium text-gray-600">파종기</span>
               <div className="flex items-center space-x-2">
                 <div className="w-32 bg-gray-200 rounded-full h-2">
-                  <div className="bg-purple-600 h-2 rounded-full" style={{ width: '45%' }}></div>
+                  <div className="h-2 rounded-full" style={{ width: '45%', backgroundColor: '#E1EEBC' }}></div>
                 </div>
                 <span className="text-sm text-gray-500">45%</span>
               </div>

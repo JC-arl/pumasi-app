@@ -1,4 +1,5 @@
 import type { RentalOffice } from "../types/rental";
+import { colors } from '../styles/colors';
 
 interface RentalOfficeListProps {
   offices: RentalOffice[];
@@ -27,8 +28,8 @@ const RentalOfficeList = ({
               : "border-gray-200 hover:border-gray-300"
           }`}
           style={selectedOffice?.id === office.id ? {
-            borderColor: '#133E87',
-            backgroundColor: '#CBDCEB'
+            borderColor: colors.primary.main,
+            backgroundColor: colors.primary.accent
           } : {}}
         >
           <div className="flex justify-between items-start mb-2">

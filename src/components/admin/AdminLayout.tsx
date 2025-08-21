@@ -13,12 +13,17 @@ import {
   Menu,
   X,
   Shield,
+  ArrowUpDown,
+  Monitor,
 } from 'lucide-react';
+import RegionSelector from './RegionSelector';
 
 const navigation = [
   { name: '대시보드', href: '/admin/dashboard', icon: LayoutDashboard },
   { name: '장비·자산', href: '/admin/assets', icon: Package },
   { name: '예약·배정', href: '/admin/reservations', icon: Calendar },
+  { name: '출고·반납', href: '/admin/checkout', icon: ArrowUpDown },
+  { name: '임대 중 관리', href: '/admin/monitoring', icon: Monitor },
   { name: '임대사업소', href: '/admin/offices', icon: Building2 },
   { name: '정비·점검', href: '/admin/maintenance', icon: Wrench },
   { name: '사용자 관리', href: '/admin/users', icon: Users },
@@ -29,6 +34,7 @@ const navigation = [
 
 export default function AdminLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [selectedRegion, setSelectedRegion] = useState<string | null>(null);
   const location = useLocation();
 
   return (
@@ -150,6 +156,10 @@ export default function AdminLayout() {
           <div className="flex flex-1 gap-x-4 self-stretch lg:gap-x-6">
             <div className="relative flex flex-1"></div>
             <div className="flex items-center gap-x-4 lg:gap-x-6">
+              <RegionSelector 
+                selectedRegion={selectedRegion} 
+                onRegionChange={setSelectedRegion} 
+              />
               <div className="text-sm text-gray-500">
                 관리자 페이지
               </div>
