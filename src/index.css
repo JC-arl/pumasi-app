@@ -3,3 +3,47 @@
 :root {
   color-scheme: light dark;
 }
+
+/* Date input styling fixes */
+input[type="date"] {
+  background-color: white !important;
+  color: #1f2937 !important;
+  font-weight: 500;
+}
+
+input[type="date"]::-webkit-calendar-picker-indicator {
+  background-color: transparent;
+  color: #6b7280;
+  cursor: pointer;
+  padding: 2px;
+  border-radius: 3px;
+  filter: invert(0.5);
+}
+
+input[type="date"]::-webkit-calendar-picker-indicator:hover {
+  background-color: #f3f4f6;
+  filter: invert(0.3);
+}
+
+input[type="date"]:focus::-webkit-calendar-picker-indicator {
+  background-color: #e5e7eb;
+  filter: invert(0.2);
+}
+
+/* Fix date text readability */
+input[type="date"]::-webkit-datetime-edit {
+  color: #1f2937;
+  font-weight: 500;
+}
+
+input[type="date"]::-webkit-datetime-edit-text {
+  color: #6b7280;
+  padding: 0 1px;
+}
+
+input[type="date"]::-webkit-datetime-edit-month-field,
+input[type="date"]::-webkit-datetime-edit-day-field,
+input[type="date"]::-webkit-datetime-edit-year-field {
+  color: #1f2937;
+  font-weight: 500;
+}

@@ -109,13 +109,8 @@ export default function MapPage() {
   };
 
   const handleOfficeSelect = (office: RentalOffice) => {
-    // 임대소 리스트 더블클릭 시 상세 페이지로 이동
+    // 임대소 리스트 클릭 시 바로 상세 페이지로 이동
     navigate(`/office/${office.id}`);
-  };
-
-  const handleOfficeFocus = (office: RentalOffice) => {
-    // 임대소 리스트 단일클릭 시 지도 마커로 포커스/이동
-    setSelectedOffice(office);
   };
 
   const handleMarkerClick = (office: RentalOffice) => {
@@ -236,7 +231,6 @@ export default function MapPage() {
             <RentalOfficeList
               offices={filteredOffices}
               onOfficeSelect={handleOfficeSelect}
-              onOfficeFocus={handleOfficeFocus}
               selectedOffice={selectedOffice}
             />
           </div>

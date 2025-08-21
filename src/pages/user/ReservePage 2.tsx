@@ -9,7 +9,8 @@ const steps: ReservationStep[] = [
   { id: 1, title: '농기계 선택', description: '임대할 농기계를 선택하세요', completed: false, active: true },
   { id: 2, title: '일정 선택', description: '임대 일정을 선택하세요', completed: false, active: false },
   { id: 3, title: '배송 옵션', description: '배송 방법을 선택하세요', completed: false, active: false },
-  { id: 4, title: '신청 완료', description: '예약 신청을 완료하세요', completed: false, active: false },
+  { id: 4, title: '신청 정보', description: '신청자 정보를 입력하세요', completed: false, active: false },
+  { id: 5, title: '신청 완료', description: '예약 신청을 완료하세요', completed: false, active: false },
 ];
 
 export default function ReservePage() {
@@ -85,72 +86,74 @@ export default function ReservePage() {
       {/* Progress Steps */}
       <div className="mb-8">
         <nav aria-label="Progress">
-          <ol role="list" className="flex items-center">
+          <ol role="list" className="flex items-center justify-between">
             {currentSteps.map((step, stepIdx) => (
               <li 
                 key={step.id} 
-                className="relative flex flex-col items-center"
+                className={`relative flex flex-col ${
+                  stepIdx === 0 ? 'items-start' : 
+                  stepIdx === currentSteps.length - 1 ? 'items-end' : 
+                  'items-center'
+                }`}
                 style={{
-                  flex: '1',
-                  maxWidth: stepIdx === 0 || stepIdx === currentSteps.length - 1 ? '120px' : '140px'
+                  flex: stepIdx === 0 || stepIdx === currentSteps.length - 1 ? '0 0 auto' : '1'
                 }}
               >
-                {/* Connection lines */}
-                {stepIdx !== 0 && (
+                {stepIdx !== currentSteps.length - 1 && (
                   <div 
-                    className="absolute top-4 left-0 h-0.5 w-full z-0" 
+                    className="absolute top-4 h-0.5" 
                     aria-hidden="true"
                     style={{
-                      transform: 'translateX(-50%)',
-                      zIndex: 0
+                      left: stepIdx === 0 ? '32px' : '50%',
+                      right: stepIdx === currentSteps.length - 2 ? '32px' : '50%',
+                      transform: stepIdx === 0 ? 'none' : 
+                                stepIdx === currentSteps.length - 2 ? 'none' : 
+                                'translateX(-50%)',
+                      width: stepIdx === 0 || stepIdx === currentSteps.length - 2 ? 
+                             'calc(50% + 20px)' : '100%'
                     }}
                   >
                     <div 
-                      className="h-full transition-all duration-300" 
+                      className={`h-full transition-colors`} 
                       style={{
-                        backgroundColor: currentSteps[stepIdx - 1].completed ? colors.primary.main : '#e5e7eb',
+                        backgroundColor: step.completed ? colors.primary.main : '#e5e7eb',
                       }}
                     />
                   </div>
                 )}
-                
-                {/* Step circle */}
-                <div className="relative flex h-8 w-8 items-center justify-center z-10 bg-white">
+                <div className="relative flex h-8 w-8 items-center justify-center z-10">
                   {step.completed ? (
                     <CheckCircle 
-                      className="h-8 w-8 transition-all duration-300" 
+                      className="h-8 w-8" 
                       style={{color: colors.primary.main}}
                     />
                   ) : step.active ? (
                     <div 
-                      className="h-8 w-8 rounded-full flex items-center justify-center transition-all duration-300 shadow-md"
+                      className="h-8 w-8 rounded-full flex items-center justify-center"
                       style={{backgroundColor: colors.primary.main}}
                     >
                       <span className="text-white text-sm font-medium">{step.id}</span>
                     </div>
                   ) : (
-                    <div className="h-8 w-8 rounded-full bg-gray-200 flex items-center justify-center border-2 border-gray-300 transition-all duration-300">
+                    <div className="h-8 w-8 rounded-full bg-gray-200 flex items-center justify-center">
                       <span className="text-gray-500 text-sm font-medium">{step.id}</span>
                     </div>
                   )}
                 </div>
-                
-                {/* Step title */}
-                <div className="mt-3 text-center px-2">
+                <div 
+                  className={`mt-2 ${
+                    stepIdx === 0 ? 'text-left' : 
+                    stepIdx === currentSteps.length - 1 ? 'text-right' : 
+                    'text-center'
+                  }`}
+                >
                   <span 
-                    className={`text-sm font-medium block transition-colors duration-300 ${
+                    className={`text-sm font-medium whitespace-nowrap ${
                       step.active ? '' : step.completed ? 'text-gray-900' : 'text-gray-500'
                     }`}
                     style={step.active ? {color: colors.primary.main} : {}}
                   >
                     {step.title}
-                  </span>
-                  <span 
-                    className={`text-xs block mt-1 transition-colors duration-300 ${
-                      step.active ? 'text-gray-700' : 'text-gray-400'
-                    }`}
-                  >
-                    {step.description}
                   </span>
                 </div>
               </li>
@@ -171,7 +174,10 @@ export default function ReservePage() {
           <DeliveryOptions formData={formData} setFormData={setFormData} />
         )}
         {currentStep === 4 && (
-          <ReservationSummary formData={formData} selectedOffice={selectedOffice} setFormData={setFormData} />
+          <FarmerInfo formData={formData} setFormData={setFormData} />
+        )}
+        {currentStep === 5 && (
+          <ReservationSummary formData={formData} selectedOffice={selectedOffice} />
         )}
 
         {/* Navigation */}
@@ -286,8 +292,8 @@ function MachinerySelection({ formData, setFormData }: {
             </div>
           </div>
 
-          <div className="rounded-lg p-4" style={{backgroundColor: colors.primary.accent, borderColor: colors.border.light, border: '1px solid'}}>
-            <p className="text-sm" style={{color: colors.text.primary}}>
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+            <p className="text-sm text-blue-800">
               💡 같은 날짜에 여러 농기계를 함께 예약할 수 있습니다. 
               추가로 농기계를 선택하려면 <a href="/map" className="underline font-medium">지도</a>에서 선택하세요.
             </p>
@@ -397,14 +403,11 @@ function DateSelection({ formData, setFormData }: {
             min={today}
             value={formData.startDate || ''}
             onChange={(e) => handleStartDateChange(e.target.value)}
-            className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:border-transparent"
+            className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2"
             style={{
               borderColor: '#d1d5db',
-              '--tw-ring-color': colors.primary.main,
-              backgroundColor: 'white',
-              color: '#1f2937',
-              fontWeight: '500'
-            } as React.CSSProperties}
+              focusRingColor: colors.primary.main
+            }}
             placeholder="임대 시작일을 선택하세요"
           />
           {formData.startDate && (
@@ -484,8 +487,7 @@ function DeliveryOptions({ formData, setFormData }: {
               name="delivery"
               checked={!formData.deliveryRequired}
               onChange={() => setFormData({ ...formData, deliveryRequired: false, deliveryAddress: undefined })}
-              className="h-4 w-4 border-gray-300"
-              style={{'accentColor': colors.primary.main} as React.CSSProperties}
+              className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
             />
             <div className="ml-3">
               <div className="flex items-center">
@@ -502,8 +504,7 @@ function DeliveryOptions({ formData, setFormData }: {
               name="delivery"
               checked={formData.deliveryRequired}
               onChange={() => setFormData({ ...formData, deliveryRequired: true })}
-              className="h-4 w-4 border-gray-300"
-              style={{'accentColor': colors.primary.main} as React.CSSProperties}
+              className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
             />
             <div className="ml-3">
               <div className="flex items-center">
@@ -526,8 +527,7 @@ function DeliveryOptions({ formData, setFormData }: {
               value={formData.deliveryAddress || ''}
               onChange={(e) => setFormData({ ...formData, deliveryAddress: e.target.value })}
               placeholder="상세한 배송 주소를 입력해주세요"
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2"
-              style={{'--tw-ring-color': colors.primary.main} as React.CSSProperties}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
         )}
@@ -536,111 +536,148 @@ function DeliveryOptions({ formData, setFormData }: {
   );
 }
 
-
-function ReservationSummary({ formData, selectedOffice, setFormData }: {
+function FarmerInfo({ formData, setFormData }: {
   formData: Partial<ReservationForm>;
-  selectedOffice?: any;
-  setFormData?: (data: Partial<ReservationForm>) => void;
+  setFormData: (data: Partial<ReservationForm>) => void;
 }) {
-  const selectedMachinery = formData.selectedMachinery || [];
-  const totalPrice = selectedMachinery.reduce((sum, machinery) => sum + machinery.rentalPrice, 0);
-  const selectedPeriod = formData.rentalPeriod || '1일';
-  const periodDays = selectedPeriod === '반일' ? 0.5 : 
-                   selectedPeriod === '1일' ? 1 :
-                   selectedPeriod === '2일' ? 2 :
-                   selectedPeriod === '3일' ? 3 :
-                   selectedPeriod === '1주일' ? 7 :
-                   selectedPeriod === '2주일' ? 14 : 1;
-  const totalRentalCost = totalPrice * periodDays;
-
   return (
     <div>
-      <h3 className="text-lg font-medium text-gray-900 mb-6">예약 신청 완료</h3>
+      <h3 className="text-lg font-medium text-gray-900 mb-4">신청자 정보</h3>
+      <div className="space-y-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label htmlFor="farmerName" className="block text-sm font-medium text-gray-700 mb-2">
+              성명 *
+            </label>
+            <input
+              type="text"
+              id="farmerName"
+              value={formData.farmerName || ''}
+              onChange={(e) => setFormData({ ...formData, farmerName: e.target.value })}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              required
+            />
+          </div>
+          <div>
+            <label htmlFor="farmerPhone" className="block text-sm font-medium text-gray-700 mb-2">
+              연락처 *
+            </label>
+            <input
+              type="tel"
+              id="farmerPhone"
+              value={formData.farmerPhone || ''}
+              onChange={(e) => setFormData({ ...formData, farmerPhone: e.target.value })}
+              placeholder="010-0000-0000"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              required
+            />
+          </div>
+        </div>
+
+        <div>
+          <label htmlFor="farmAddress" className="block text-sm font-medium text-gray-700 mb-2">
+            농장 주소 *
+          </label>
+          <textarea
+            id="farmAddress"
+            rows={2}
+            value={formData.farmAddress || ''}
+            onChange={(e) => setFormData({ ...formData, farmAddress: e.target.value })}
+            placeholder="농장 주소를 입력해주세요"
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            required
+          />
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label htmlFor="farmSize" className="block text-sm font-medium text-gray-700 mb-2">
+              농장 규모 (평)
+            </label>
+            <input
+              type="number"
+              id="farmSize"
+              value={formData.farmSize || ''}
+              onChange={(e) => setFormData({ ...formData, farmSize: parseInt(e.target.value) })}
+              min="0"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+          <div>
+            <label htmlFor="cropType" className="block text-sm font-medium text-gray-700 mb-2">
+              재배 작물
+            </label>
+            <input
+              type="text"
+              id="cropType"
+              value={formData.cropType || ''}
+              onChange={(e) => setFormData({ ...formData, cropType: e.target.value })}
+              placeholder="예: 벼, 콩, 옥수수 등"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+        </div>
+
+        <div>
+          <label htmlFor="notes" className="block text-sm font-medium text-gray-700 mb-2">
+            특이사항
+          </label>
+          <textarea
+            id="notes"
+            rows={3}
+            value={formData.notes || ''}
+            onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
+            placeholder="추가 요청사항이나 특이사항을 입력해주세요"
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function ReservationSummary({ formData, selectedOffice }: {
+  formData: Partial<ReservationForm>;
+  selectedOffice?: any;
+}) {
+  return (
+    <div>
+      <h3 className="text-lg font-medium text-gray-900 mb-4">예약 신청 확인</h3>
       <div className="space-y-6">
-        {/* 신청자 정보 입력 */}
         <div className="bg-gray-50 rounded-lg p-4">
-          <h4 className="font-medium text-gray-900 mb-4">신청자 정보</h4>
-          <div className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  성명 *
-                </label>
-                <input
-                  type="text"
-                  value={formData.farmerName || ''}
-                  onChange={(e) => setFormData?.({ ...formData, farmerName: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:border-transparent"
-                  style={{'--tw-ring-color': colors.primary.main} as React.CSSProperties}
-                  placeholder="이름을 입력하세요"
-                  required
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  연락처 *
-                </label>
-                <input
-                  type="tel"
-                  value={formData.farmerPhone || ''}
-                  onChange={(e) => setFormData?.({ ...formData, farmerPhone: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:border-transparent"
-                  style={{'--tw-ring-color': colors.primary.main} as React.CSSProperties}
-                  placeholder="010-0000-0000"
-                  required
-                />
-              </div>
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                농장 주소 *
-              </label>
-              <input
-                type="text"
-                value={formData.farmAddress || ''}
-                onChange={(e) => setFormData?.({ ...formData, farmAddress: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:border-transparent"
-                style={{'--tw-ring-color': colors.primary.main} as React.CSSProperties}
-                placeholder="농장 주소를 입력하세요"
-                required
-              />
-            </div>
+          <h4 className="font-medium text-gray-900 mb-3">선택한 농기계</h4>
+          <div className="space-y-2 text-sm">
+            <p><span className="font-medium">농기계:</span> {formData.machineryName}</p>
+            <p><span className="font-medium">임대사업소:</span> {selectedOffice?.name}</p>
+            <p><span className="font-medium">임대 기간:</span> {formData.startDate} ~ {formData.endDate}</p>
+            <p><span className="font-medium">배송:</span> {formData.deliveryRequired ? '배송 요청' : '직접 수령'}</p>
           </div>
         </div>
 
-        {/* 예약 요약 */}
         <div className="bg-gray-50 rounded-lg p-4">
-          <h4 className="font-medium text-gray-900 mb-3">예약 요약</h4>
-          <div className="space-y-3 text-sm">
-            {selectedMachinery.map((machinery, index) => (
-              <div key={index} className="flex justify-between">
-                <span>{machinery.machineryName}</span>
-                <span className="font-medium">₩{machinery.rentalPrice.toLocaleString()}/일</span>
-              </div>
-            ))}
-            <div className="border-t pt-2">
-              <div className="flex justify-between">
-                <span>임대 기간:</span>
-                <span>{formData.startDate} ~ {formData.endDate} ({selectedPeriod})</span>
-              </div>
-              <div className="flex justify-between">
-                <span>배송 방법:</span>
-                <span>{formData.deliveryRequired ? '배송 요청' : '직접 수령'}</span>
-              </div>
-              <div className="flex justify-between font-bold text-lg mt-2" style={{color: colors.primary.main}}>
-                <span>총 임대료:</span>
-                <span>₩{totalRentalCost.toLocaleString()}</span>
-              </div>
-            </div>
+          <h4 className="font-medium text-gray-900 mb-3">신청자 정보</h4>
+          <div className="space-y-2 text-sm">
+            <p><span className="font-medium">성명:</span> {formData.farmerName}</p>
+            <p><span className="font-medium">연락처:</span> {formData.farmerPhone}</p>
+            <p><span className="font-medium">농장 주소:</span> {formData.farmAddress}</p>
+            {formData.farmSize && <p><span className="font-medium">농장 규모:</span> {formData.farmSize}평</p>}
+            {formData.cropType && <p><span className="font-medium">재배 작물:</span> {formData.cropType}</p>}
           </div>
         </div>
 
-        <div className="rounded-lg p-4" style={{backgroundColor: colors.primary.accent, borderColor: colors.border.light, border: '1px solid'}}>
+        {formData.notes && (
+          <div className="bg-gray-50 rounded-lg p-4">
+            <h4 className="font-medium text-gray-900 mb-3">특이사항</h4>
+            <p className="text-sm text-gray-700">{formData.notes}</p>
+          </div>
+        )}
+
+        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
           <div className="flex items-start">
-            <FileText className="h-5 w-5 mt-0.5 mr-3" style={{color: colors.primary.main}} />
+            <FileText className="h-5 w-5 text-blue-600 mt-0.5 mr-3" />
             <div className="text-sm">
-              <p className="font-medium mb-1" style={{color: colors.text.primary}}>신청 안내</p>
-              <p style={{color: colors.text.secondary}}>
+              <p className="font-medium text-blue-900 mb-1">신청 안내</p>
+              <p className="text-blue-700">
                 예약 신청 후 관리자 승인이 완료되면 연락을 드립니다. 
                 승인까지 1-2일 정도 소요될 수 있습니다.
               </p>
