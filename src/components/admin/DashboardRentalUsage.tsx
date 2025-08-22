@@ -98,15 +98,26 @@ export default function DashboardRentalUsage() {
   const [selectedCategory, setSelectedCategory] = useState('트랙터 계열');
   const [loading, setLoading] = useState(true);
   const dataRef = useRef<RentalData | null>(null);
+  const [predictionData, setPredictionData] = useState<any>(null);
 
   // 데이터 로드
   useEffect(() => {
     const loadData = async () => {
       try {
+        // 기존 데이터 로드
         const response = await fetch('/data/all_regions_monthly_rental_days_remapped_fix.json');
         const data = await response.json();
-        
         dataRef.current = data;
+
+        // 2025 예측 데이터 로드
+        try {
+          const predResponse = await fetch('/analysis/predicted_demand_2025.json');
+          const predData = await predResponse.json();
+          setPredictionData(predData);
+        } catch (predError) {
+          console.warn('2025 예측 데이터 로드 실패:', predError);
+        }
+        
         setLoading(false);
       } catch (error) {
         console.error('데이터 로드 실패:', error);
@@ -132,7 +143,24 @@ export default function DashboardRentalUsage() {
   }, [data, region]);
 
   // 파생 데이터 메모이제이션
-  const monthlyData = useMemo(() => getMonthly(data, region, year), [data, region, year]);
+  const monthlyData = useMemo(() => {
+    // 2025년이고 예측 데이터가 있으면 예측 데이터 사용
+    if (year === 2025 && predictionData) {
+      return predictionData.monthly.map((month: any) => ({
+        월: month.월,
+        '트랙터 계열': month['트랙터 계열'] || 0,
+        '수확기 계열': month['수확기 계열'] || 0,
+        '파쇄기 계열': month['파쇄기 계열'] || 0,
+        '탈곡기 계열': month['탈곡기 계열'] || 0,
+        '이양기 계열': month['이양기 계열'] || 0,
+        '살포기 계열': month['살포기 계열'] || 0,
+        '기타 계열': 0 // 예측에는 기타 계열 없음
+      }));
+    }
+    // 일반 데이터 사용
+    return getMonthly(data, region, year);
+  }, [data, region, year, predictionData]);
+  
   const lineSeries = useMemo(() => monthlyData.map(d => ({ 월: d.월, value: d[selectedCategory] || 0 })), [monthlyData, selectedCategory]);
 
   // 연도가 변경되면 유효한 연도로 조정
@@ -194,7 +222,7 @@ export default function DashboardRentalUsage() {
             >
               {availableYears.map(yearOption => (
                 <option key={yearOption} value={yearOption} className="text-gray-800 bg-white">
-                  {yearOption}년
+                  {yearOption === 2025 && predictionData ? `${yearOption}년(예측)` : `${yearOption}년`}
                 </option>
               ))}
             </select>
@@ -226,7 +254,7 @@ export default function DashboardRentalUsage() {
       {/* 농기계 계열 월별 추이 차트 - 전체 폭 */}
       <div className="bg-white shadow rounded-lg p-8">
         <h3 className="text-xl font-bold text-gray-800 dark:text-gray-100 mb-6">
-          {selectedCategory} 월별 추이 ({region} {year}년)
+          {selectedCategory} 월별 추이 ({region} {year === 2025 && predictionData ? `${year}년(예측)` : `${year}년`})
         </h3>
         <div className="h-[280px]">
           <ResponsiveContainer width="100%" height="100%">
@@ -240,10 +268,18 @@ export default function DashboardRentalUsage() {
               />
               <YAxis 
                 tick={{ fontSize: 14, fill: '#6b7280' }}
-                label={{ value: '대여일수 (일)', angle: -90, position: 'insideLeft', style: { textAnchor: 'middle' } }}
+                label={{ 
+                  value: year === 2025 && predictionData ? '수요예측 (건)' : '대여일수 (일)', 
+                  angle: -90, 
+                  position: 'insideLeft', 
+                  style: { textAnchor: 'middle' } 
+                }}
               />
               <Tooltip 
-                formatter={(value: number) => [`${value}일`, selectedCategory]}
+                formatter={(value: number) => [
+                  `${value}${year === 2025 && predictionData ? '건' : '일'}`, 
+                  selectedCategory
+                ]}
                 labelFormatter={(label: number) => `${year}년 ${label}월`}
                 contentStyle={{
                   backgroundColor: '#fff',
