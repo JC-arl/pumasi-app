@@ -111,7 +111,7 @@ export default function CartPage() {
                   onClick={() => navigate('/map')}
                   className="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg font-medium hover:bg-gray-50 transition-colors"
                 >
-                  계속 쇼핑하기
+                  계속 예약하기
                 </button>
               </div>
             </div>

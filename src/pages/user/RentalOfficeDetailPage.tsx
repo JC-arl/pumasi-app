@@ -3,6 +3,7 @@ import { useState, useMemo } from 'react';
 import { ArrowLeft, MapPin, Phone, Clock, Filter } from 'lucide-react';
 import { mockRentalOffices } from '../../data/mockData';
 import { kimcheonMachinery } from '../../data/kimcheonMachinery';
+import { jeoubukMachinery } from '../../data/jeoubukMachinery';
 import { getAvailableCount } from '../../utils/reservationUtils';
 import type { Machinery } from '../../types/rental';
 
@@ -14,10 +15,167 @@ export default function RentalOfficeDetailPage() {
 
   const office = mockRentalOffices.find(o => o.id === officeId);
   
+  // jeoubukMachinery를 Machinery 형태로 변환
+  const convertJeoubukToMachinery = (): Machinery[] => {
+    const result: Machinery[] = [];
+    
+    Object.entries(jeoubukMachinery).forEach(([officeName, equipmentList]) => {
+      const officeId = `jeoubuk-${officeName.replace(/[^a-zA-Z0-9]/g, '').toLowerCase()}`;
+      const machineryMap = new Map<string, Machinery>();
+      
+      equipmentList.forEach((equipment, index) => {
+        const machineryKey = equipment.농기계명;
+        
+        if (!machineryMap.has(machineryKey)) {
+          machineryMap.set(machineryKey, {
+            id: `${officeId}-${equipment.농기계명.replace(/[^a-zA-Z0-9]/g, '')}-${Math.random().toString(36).substring(2, 11)}`,
+            name: equipment.농기계명,
+            image: `/images/machinery/${equipment.농기계명}.jpg`,
+            category: equipment.주작업 || '일반',
+            officeId: officeId,
+            specifications: []
+          });
+        }
+        
+        const machinery = machineryMap.get(machineryKey)!;
+        machinery.specifications.push({
+          id: `${equipment.표준코드}-${index}`,
+          specification: equipment.규격 || '표준',
+          manufacturer: equipment.제조사 || '제조사 미상',
+          totalCount: equipment.totalCount || 1,
+          availableCount: equipment.availableCount || 1,
+          rentalPrice: equipment.임대금액 || 0,
+          description: equipment.주작업 || '',
+          standardCode: equipment.표준코드 || '',
+        });
+      });
+      
+      result.push(...Array.from(machineryMap.values()));
+    });
+    
+    return result;
+  };
+  
+  // 전체 농기계 목록 (김천 + 전북)
+  const allMachinery = [...kimcheonMachinery, ...convertJeoubukToMachinery()];
+  
   // 해당 임대소의 농기계 목록 필터링
-  const officeMachinery = kimcheonMachinery.filter(
+  let officeMachinery = allMachinery.filter(
     (machinery: Machinery) => machinery.officeId === officeId
   );
+  
+  // jeoubuk_tools.json에 없는 전라북도 지역에 임시 농기계 데이터 추가
+  if (officeMachinery.length === 0 && office?.description?.includes('전북특별자치도')) {
+    const mockMachinery: Machinery[] = [
+      {
+        id: `${officeId}-tractor-001`,
+        name: "트랙터",
+        image: "/images/machinery/트랙터.jpg",
+        category: "경운작업",
+        officeId: officeId!,
+        specifications: [
+          {
+            id: "tractor-spec-1",
+            specification: "40마력급",
+            manufacturer: "대동공업(주)",
+            totalCount: 3,
+            availableCount: 2,
+            rentalPrice: 15000,
+            description: "일반 경운작업용",
+            standardCode: "001-01-0001-1001",
+          },
+          {
+            id: "tractor-spec-2", 
+            specification: "60마력급",
+            manufacturer: "동양물산(주)",
+            totalCount: 2,
+            availableCount: 1,
+            rentalPrice: 20000,
+            description: "중작업용",
+            standardCode: "001-01-0002-1001",
+          }
+        ]
+      },
+      {
+        id: `${officeId}-cultivator-001`,
+        name: "경운기",
+        image: "/images/machinery/경운기.jpg", 
+        category: "경운작업",
+        officeId: officeId!,
+        specifications: [
+          {
+            id: "cultivator-spec-1",
+            specification: "15마력급",
+            manufacturer: "대동공업(주)",
+            totalCount: 5,
+            availableCount: 3,
+            rentalPrice: 8000,
+            description: "소규모 경운작업용",
+            standardCode: "001-02-0001-1001",
+          }
+        ]
+      },
+      {
+        id: `${officeId}-rotary-001`,
+        name: "로터베이터",
+        image: "/images/machinery/로터베이터.jpg",
+        category: "경운작업", 
+        officeId: officeId!,
+        specifications: [
+          {
+            id: "rotary-spec-1",
+            specification: "120cm급",
+            manufacturer: "영진기계(주)",
+            totalCount: 4,
+            availableCount: 2,
+            rentalPrice: 5000,
+            description: "토양정리용",
+            standardCode: "001-18-0001-1108",
+          }
+        ]
+      },
+      {
+        id: `${officeId}-harvester-001`,
+        name: "콤바인",
+        image: "/images/machinery/콤바인.jpg",
+        category: "수확작업",
+        officeId: officeId!,
+        specifications: [
+          {
+            id: "harvester-spec-1", 
+            specification: "4조식",
+            manufacturer: "동양물산(주)",
+            totalCount: 2,
+            availableCount: 1,
+            rentalPrice: 35000,
+            description: "벼 수확용",
+            standardCode: "001-15-0001-1201",
+          }
+        ]
+      },
+      {
+        id: `${officeId}-sprayer-001`,
+        name: "방제기",
+        image: "/images/machinery/방제기.jpg",
+        category: "방제작업",
+        officeId: officeId!,
+        specifications: [
+          {
+            id: "sprayer-spec-1",
+            specification: "500L급",
+            manufacturer: "성창기계(주)", 
+            totalCount: 3,
+            availableCount: 2,
+            rentalPrice: 12000,
+            description: "농약살포용",
+            standardCode: "001-07-0001-1301",
+          }
+        ]
+      }
+    ];
+    
+    officeMachinery = mockMachinery;
+  }
 
   // 농기계 종류를 큰 카테고리로 분류하는 함수
   const getMachineryMainCategory = (machineryName: string, category: string) => {

@@ -1,0 +1,18 @@
+{
+  "features": [
+    "기계종류_enc",
+    "year",
+    "month",
+    "평균기온(°C)",
+    "일강수량(mm)",
+    "합계 일조시간(hr)",
+    "soil_ec",
+    "soil_temper",
+    "soil_humidty",
+    "temperature",
+    "humidity",
+    "sunshine",
+    "stage_enc",
+    "crops_step_enc"
+  ]
+}

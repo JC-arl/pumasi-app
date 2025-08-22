@@ -4,12 +4,14 @@ import { colors } from '../styles/colors';
 interface RentalOfficeListProps {
   offices: RentalOffice[];
   onOfficeSelect: (office: RentalOffice) => void;
+  onOfficeFocus?: (office: RentalOffice) => void;
   selectedOffice?: RentalOffice | null;
 }
 
 const RentalOfficeList = ({
   offices,
   onOfficeSelect,
+  onOfficeFocus,
   selectedOffice,
 }: RentalOfficeListProps) => {
   return (
@@ -21,6 +23,7 @@ const RentalOfficeList = ({
       {offices.map((office) => (
         <div
           key={office.id}
+          onClick={() => onOfficeFocus?.(office)}
           onDoubleClick={() => onOfficeSelect(office)}
           className={`p-4 border rounded-lg cursor-pointer transition-all hover:shadow-md ${
             selectedOffice?.id === office.id

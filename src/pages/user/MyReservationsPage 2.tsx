@@ -316,7 +316,6 @@ export default function MyReservationsPage() {
           <p className="text-gray-500 text-lg font-medium">
             {selectedTab === 'applied' && '신청한 예약이 없습니다'}
             {selectedTab === 'cancelled' && '취소된 예약이 없습니다'}
-            {selectedTab === 'completed' && '완료된 예약이 없습니다'}
           </p>
           <p className="text-sm text-gray-400 mt-2">
             농기계 예약을 신청하면 여기에 표시됩니다

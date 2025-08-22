@@ -3,7 +3,10 @@ import { type ColumnDef } from '@tanstack/react-table';
 import AdminTable from '../../components/admin/AdminTable';
 import StatusBadge from '../../components/admin/StatusBadge';
 import { regions, getRegionByOfficeId } from '../../data/regionData';
+import { kimcheonMachinery } from '../../data/kimcheonMachinery';
+import { jeoubukMachinery } from '../../data/jeoubukMachinery';
 import type { Asset } from '../../types/admin';
+import type { Machinery } from '../../types/rental';
 import { 
   Filter, 
   Download, 
@@ -12,91 +15,83 @@ import {
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
+// 농기계 데이터를 Asset 형태로 변환하는 함수
+const transformMachineryToAssets = (machinery: Machinery[]): Asset[] => {
+  const assets: Asset[] = [];
+  
+  machinery.forEach(machine => {
+    machine.specifications.forEach((spec) => {
+      // 각 specification을 개별 자산으로 생성
+      for (let i = 0; i < spec.totalCount; i++) {
+        const asset: Asset = {
+          id: `${machine.id}-${spec.id}-${i + 1}`,
+          standardCode: spec.standardCode,
+          name: machine.name,
+          model: `${spec.specification} (${spec.manufacturer})`,
+          officeId: machine.officeId,
+          status: i < spec.availableCount ? 'AVAILABLE' : 'IN_USE',
+          totalUsageHours: Math.floor(Math.random() * 2000) + 100,
+          purchaseDate: `202${Math.floor(Math.random() * 4 + 1)}-${String(Math.floor(Math.random() * 12) + 1).padStart(2, '0')}-${String(Math.floor(Math.random() * 28) + 1).padStart(2, '0')}`,
+          assetNumber: `${spec.standardCode}-${i + 1}`,
+          location: getOfficeLocationName(machine.officeId),
+          lastMaintenance: Math.random() > 0.3 ? `2024-${String(Math.floor(Math.random() * 8) + 1).padStart(2, '0')}-${String(Math.floor(Math.random() * 28) + 1).padStart(2, '0')}` : undefined,
+        };
+        assets.push(asset);
+      }
+    });
+  });
+  
+  return assets;
+};
+
+// 전북 농기계 데이터를 Asset 형태로 변환하는 함수
+const transformJeoubukToAssets = (jeoubukData: Record<string, readonly any[]>): Asset[] => {
+  const assets: Asset[] = [];
+  
+  Object.entries(jeoubukData).forEach(([officeName, equipmentList]) => {
+    equipmentList.forEach((equipment) => {
+      // 각 장비를 개별 자산으로 생성
+      for (let i = 0; i < equipment.totalCount; i++) {
+        const asset: Asset = {
+          id: `jeoubuk-${equipment.표준코드}-${i + 1}`,
+          standardCode: equipment.표준코드,
+          name: equipment.농기계명,
+          model: `${equipment.규격} (${equipment.제조사})`,
+          officeId: `jeoubuk-${officeName.replace(/\s+/g, '').replace(/[^가-힣a-zA-Z0-9]/g, '')}`,
+          status: i < equipment.availableCount ? 'AVAILABLE' : 'IN_USE',
+          totalUsageHours: Math.floor(Math.random() * 2000) + 100,
+          purchaseDate: `202${Math.floor(Math.random() * 4 + 1)}-${String(Math.floor(Math.random() * 12) + 1).padStart(2, '0')}-${String(Math.floor(Math.random() * 28) + 1).padStart(2, '0')}`,
+          assetNumber: `${equipment.표준코드}-${i + 1}`,
+          location: officeName,
+          lastMaintenance: Math.random() > 0.3 ? `2024-${String(Math.floor(Math.random() * 8) + 1).padStart(2, '0')}-${String(Math.floor(Math.random() * 28) + 1).padStart(2, '0')}` : undefined,
+        };
+        assets.push(asset);
+      }
+    });
+  });
+  
+  return assets;
+};
+
+// 사무소 ID를 실제 위치명으로 변환
+const getOfficeLocationName = (officeId: string): string => {
+  const officeMap: { [key: string]: string } = {
+    'kimcheon-edu': '김천시 농업기술센터',
+    'kimcheon-south': '김천시 남부 농기계임대사업소',
+    'kimcheon-north': '김천시 북부 농기계임대사업소',
+  };
+  return officeMap[officeId] || officeId;
+};
+
+// 실제 농기계 데이터에서 변환된 Asset 목록
+const kimcheonAssets = transformMachineryToAssets(kimcheonMachinery);
+const jeoubukAssets = transformJeoubukToAssets(jeoubukMachinery);
+
+
 // 간단한 더미 데이터 - 다양한 지역의 장비들
 const allRegionsAssets: Asset[] = [
-  // 김천시 중앙지역
-  {
-    id: 'A-CEN-001',
-    standardCode: 'STD-CEN-001',
-    name: '대형트랙터',
-    model: 'John Deere 8345R',
-    officeId: 'kimcheon-edu',
-    status: 'AVAILABLE',
-    totalUsageHours: 1250,
-    purchaseDate: '2022-03-15',
-    assetNumber: 'A-CEN-001-2022',
-    location: '김천교육농장',
-    lastMaintenance: '2024-08-01',
-  },
-  // 김천시 남부지역
-  {
-    id: 'A-SOU-001',
-    standardCode: 'STD-SOU-001',
-    name: '중형경운기',
-    model: 'Kubota L3901',
-    officeId: 'kimcheon-south',
-    status: 'IN_USE',
-    totalUsageHours: 850,
-    purchaseDate: '2023-01-20',
-    assetNumber: 'A-SOU-001-2023',
-    location: '김천남부지점',
-    lastMaintenance: '2024-07-15',
-  },
-  {
-    id: 'A-SOU-002',
-    standardCode: 'STD-SOU-002',
-    name: '콤바인',
-    model: 'New Holland CR8.90',
-    officeId: 'kimcheon-south',
-    status: 'MAINTENANCE',
-    totalUsageHours: 2100,
-    purchaseDate: '2021-09-10',
-    assetNumber: 'A-SOU-002-2021',
-    location: '김천남부지점',
-    lastMaintenance: '2024-08-10',
-  },
-  // 김천시 북부지역
-  {
-    id: 'A-NOR-001',
-    standardCode: 'STD-NOR-001',
-    name: '소형트랙터',
-    model: 'Kubota B2650',
-    officeId: 'kimcheon-north',
-    status: 'AVAILABLE',
-    totalUsageHours: 420,
-    purchaseDate: '2024-02-10',
-    assetNumber: 'A-NOR-001-2024',
-    location: '김천북부지점',
-    lastMaintenance: '2024-07-01',
-  },
-  // 김천시 동부지역
-  {
-    id: 'A-EAS-001',
-    standardCode: 'STD-EAS-001',
-    name: '파종기',
-    model: 'Case IH 2150',
-    officeId: 'kimcheon-east',
-    status: 'AVAILABLE',
-    totalUsageHours: 680,
-    purchaseDate: '2023-05-15',
-    assetNumber: 'A-EAS-001-2023',
-    location: '김천동부지점',
-    lastMaintenance: '2024-06-20',
-  },
-  // 김천시 서부지역
-  {
-    id: 'A-WES-001',
-    standardCode: 'STD-WES-001',
-    name: '방제기',
-    model: 'John Deere R4030',
-    officeId: 'kimcheon-west',
-    status: 'IN_USE',
-    totalUsageHours: 950,
-    purchaseDate: '2022-08-12',
-    assetNumber: 'A-WES-001-2022',
-    location: '김천서부지점',
-    lastMaintenance: '2024-07-28',
-  },
+  ...kimcheonAssets,
+  ...jeoubukAssets,
 ];
 
 const statusOptions = [

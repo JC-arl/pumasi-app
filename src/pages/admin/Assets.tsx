@@ -179,6 +179,35 @@ const transformMachineryToAssets = (machinery: Machinery[]): Asset[] => {
   return assets;
 };
 
+// 전북 농기계 데이터를 Asset 형태로 변환하는 함수 (새로운 구조용)
+const transformJeoubukToAssets = (jeoubukData: Record<string, readonly any[]>): Asset[] => {
+  const assets: Asset[] = [];
+  
+  Object.entries(jeoubukData).forEach(([officeName, equipmentList]) => {
+    equipmentList.forEach((equipment, index) => {
+      // 각 장비를 개별 자산으로 생성
+      for (let i = 0; i < equipment.totalCount; i++) {
+        const asset: Asset = {
+          id: `jeoubuk-${equipment.표준코드}-${i + 1}`,
+          standardCode: equipment.표준코드,
+          name: equipment.농기계명,
+          model: `${equipment.규격} (${equipment.제조사})`,
+          officeId: `jeoubuk-${officeName.replace(/[^a-zA-Z0-9]/g, '').toLowerCase()}`,
+          status: i < equipment.availableCount ? 'AVAILABLE' : 'IN_USE',
+          totalUsageHours: Math.floor(Math.random() * 2000) + 100, // 임시 사용시간
+          purchaseDate: `202${Math.floor(Math.random() * 4 + 1)}-${String(Math.floor(Math.random() * 12) + 1).padStart(2, '0')}-${String(Math.floor(Math.random() * 28) + 1).padStart(2, '0')}`,
+          assetNumber: `${equipment.표준코드}-${i + 1}`,
+          location: officeName,
+          lastMaintenance: Math.random() > 0.3 ? `2024-${String(Math.floor(Math.random() * 8) + 1).padStart(2, '0')}-${String(Math.floor(Math.random() * 28) + 1).padStart(2, '0')}` : undefined,
+        };
+        assets.push(asset);
+      }
+    });
+  });
+  
+  return assets;
+};
+
 // 사무소 ID를 실제 위치명으로 변환
 const getOfficeLocationName = (officeId: string): string => {
   const officeMap: { [key: string]: string } = {
@@ -256,7 +285,7 @@ export default function Assets() {
   const [assets, setAssets] = useState<Asset[]>(() => {
     // 김천시 및 전북 농기계 데이터를 Asset 형태로 변환하여 초기화
     const kimcheonAssets = transformMachineryToAssets(kimcheonMachinery);
-    const jeoubukAssets = transformMachineryToAssets(jeoubukMachinery);
+    const jeoubukAssets = transformJeoubukToAssets(jeoubukMachinery);
     return [...mockAssets, ...kimcheonAssets, ...jeoubukAssets];
   });
   const [selectedRegion, setSelectedRegion] = useState<string | null>(null);
@@ -265,7 +294,7 @@ export default function Assets() {
   useEffect(() => {
     const savedAssets = localStorage.getItem(ASSETS_STORAGE_KEY);
     const kimcheonAssets = transformMachineryToAssets(kimcheonMachinery);
-    const jeoubukAssets = transformMachineryToAssets(jeoubukMachinery);
+    const jeoubukAssets = transformJeoubukToAssets(jeoubukMachinery);
     
     if (savedAssets) {
       try {
@@ -376,7 +405,7 @@ export default function Assets() {
 
     // localStorage에 새로 추가된 자산만 저장 (mock, kimcheon, jeoubuk 데이터 제외)
     const kimcheonAssets = transformMachineryToAssets(kimcheonMachinery);
-    const jeoubukAssets = transformMachineryToAssets(jeoubukMachinery);
+    const jeoubukAssets = transformJeoubukToAssets(jeoubukMachinery);
     const customAssets = updatedAssets.filter(asset => 
       !mockAssets.find(mock => mock.id === asset.id) &&
       !kimcheonAssets.find(kimcheon => kimcheon.id === asset.id) &&
